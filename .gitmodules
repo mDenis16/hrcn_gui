@@ -1,0 +1,9 @@
+[submodule "gui/libs/blend2d"]
+	path = gui/libs/blend2d
+	url = https://github.com/blend2d/blend2d.git
+[submodule "gui/libs/yoga"]
+	path = gui/libs/yoga
+	url = https://github.com/facebook/yoga
+[submodule "libs/imgui"]
+	path = libs/imgui
+	url = https://github.com/ocornut/imgui.git
