@@ -2,3 +2,10 @@
 .vscode/
 src/vs/
 vs/
+cmake-build-debug/
+cmake-build-default/
+cmake-build-minsizerel/
+cmake-build-release/
+cmake-build-release64/
+cmake-build-relwithdebinfo/
+.idea/
