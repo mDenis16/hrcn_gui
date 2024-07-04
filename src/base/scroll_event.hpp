@@ -1,8 +1,20 @@
-//
-// Created by Denis Topor on 01.07.2024.
-//
+#pragma once
+#include <cstdint>
 
-#ifndef SCROLL_EVENT_HPP
-#define SCROLL_EVENT_HPP
+#include "node_event.hpp"
+#include "blend2d/geometry.h"
 
-#endif //SCROLL_EVENT_HPP
+
+class c_scroll_event : public c_node_event {
+public:
+    BLPoint offset;
+    BLPointI mouse_pos;
+
+    c_scroll_event() {
+       ev_type = e_event_type::scroll;
+    }
+    ~c_scroll_event() {
+
+    }
+
+};

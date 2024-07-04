@@ -1,8 +1,14 @@
-//
-// Created by Denis Topor on 30.06.2024.
-//
+#pragma once
+#include "../base/node.hpp"
+class c_navbar : public c_node{
+public:
 
-#ifndef NAVBAR_H
-#define NAVBAR_H
+    c_navbar();
+    ~c_navbar();
 
-#endif //NAVBAR_H
+    void add_child(c_node *node) override;
+
+    void render(BLContext &context)  override;
+
+    void on_event(c_node_event *event) override;
+};

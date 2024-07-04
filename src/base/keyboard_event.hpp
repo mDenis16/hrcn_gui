@@ -1,8 +1,29 @@
-//
-// Created by Denis Topor on 01.07.2024.
-//
+#pragma once
+#include <cstdint>
 
-#ifndef KEYBOARD_EVENT_H
-#define KEYBOARD_EVENT_H
+#include "node_event.hpp"
+#include "blend2d/geometry.h"
 
-#endif //KEYBOARD_EVENT_H
+enum class e_keyboard_event_type : uint8_t {
+    min,
+    key_press,
+    key_release,
+    max
+};
+class c_keyboard_event : public c_node_event {
+public:
+    e_keyboard_event_type keyboard_event_type;
+
+    int key;
+
+    c_mouse_event() {
+
+    }
+    ~c_mouse_event() {
+
+    }
+    inline int getKey() {
+        return key;
+    }
+
+};
