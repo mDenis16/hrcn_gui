@@ -11,7 +11,7 @@ public:
     BLPointI mouse_pos;
 
     c_scroll_event() {
-       ev_type = e_event_type::scroll;
+       type = e_node_event_type::min;
     }
     ~c_scroll_event() {
 

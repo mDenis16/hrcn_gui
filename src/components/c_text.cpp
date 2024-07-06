@@ -21,6 +21,9 @@ void c_text::render(BLContext &context) {
 
 
 
+
+
+
     const char* str =
        "Hello Blend2D!\n";
 
@@ -28,17 +31,24 @@ void c_text::render(BLContext &context) {
 
 
 
-    gb.setUtf8Text((const char*)(&local_Str[0]));
-    font.shape(gb);
-    BLTextMetrics tm;
-    BLFontMetrics fm = font.metrics();
-
-    font.getTextMetrics(gb, tm);
 
 
+        gb.setUtf8Text((const char*)(&local_Str[0]));
+        font.shape(gb);
+        BLTextMetrics tm;
+        BLFontMetrics fm = font.metrics();
 
-    context.fillGlyphRun(BLPoint(box.x, box.y +  fm.capHeight),
-                     font, gb.glyphRun(), _style->_color);
+        font.getTextMetrics(gb, tm);
+
+        context.fillGlyphRun(BLPoint(box.x, box.y + fm.capHeight),
+                            font, gb.glyphRun(), _style->_color);
+
+
+
+
+
+
+
 
 
 
