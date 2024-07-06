@@ -24,6 +24,7 @@ set(BLEND2D_DIR "${APP_DIR}/libs/blend2d" CACHE PATH "Location of 'blend2d'")
 
 add_subdirectory(libs/blend2d)
 add_subdirectory(libs/yoga/yoga)
+add_subdirectory(libs/glfw)
 
 include_directories(  ${APP_DIR}/src libs/yoga ${BLEND2D_DIR}/src)
 
@@ -54,10 +55,10 @@ message(${HRCN_GUI_SRC_LIST})
 
 add_library(gui  ${HRCN_GUI_SRC_LIST})
 
-target_link_libraries(gui blend2d yogacore )
+target_link_libraries(gui glfw blend2d yogacore )
 
 # glfw
-find_package(glfw3 REQUIRED)
+
 include_directories(${GLFW_INCLUDE_DIRS})
 link_libraries(${GLFW_LIBRARY_DIRS})
 
