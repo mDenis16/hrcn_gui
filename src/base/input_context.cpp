@@ -10,6 +10,8 @@
 #include <base/events/mouse_move_event.hpp>
 #include <base/events/mouse_enter_event.hpp>
 #include <base/events/mouse_exit_event.hpp>
+#include <base/events/mouse_down_event.cpp>
+#include <base/events/mouse_up_event.cpp>
 #include <base/events/types.hpp>
 
 c_input_context::c_input_context(c_window *_window)
@@ -68,6 +70,30 @@ void c_input_context::keyboard_callback(int key, int scancode, int action)
 }
 void c_input_context::mouse_callback(int button, int action)
 {
+ 
+    for (auto &listener : c_event_listener::_listeners)
+    {
+        if (listener->node)
+        {
+
+            if (action == 1 && listener->type == e_node_event_type::mouse_down_event && listener->node->hovering)
+            {
+                auto ev = c_mouse_down_event();
+                ev.target = listener->node;
+
+                listener->callback((c_node_event *)&ev);
+                listener->node->hovering = false;
+            }
+            else if (action == 0 && listener->type == e_node_event_type::mouse_up_event && listener->node->hovering)
+            {
+                auto ev = c_mouse_up_event();
+                ev.target = listener->node;
+
+                listener->callback((c_node_event *)&ev);
+                listener->node->hovering = false;
+            }
+        }
+    }
 }
 
 void c_input_context::scroll_callback(float offsetX, float offsetY)
