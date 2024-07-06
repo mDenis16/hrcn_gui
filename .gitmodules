@@ -14,3 +14,6 @@
 [submodule "libs/yoga"]
 	path = libs/yoga
 	url = https://github.com/facebook/yoga
+[submodule "libs/asmjit"]
+	path = libs/asmjit
+	url = https://github.com/asmjit/asmjit

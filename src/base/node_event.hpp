@@ -13,31 +13,36 @@ onmouseover	The mouse pointer is moved over an element
 onmouseup
 
  **/
-enum class e_node_event_type : uint8_t {
-    min,
-    mouse_click,
-    mouse_move,
-    mouse_enter,
-    mouse_exit
-};
 
 class c_node;
+enum class e_node_event_type : unsigned char;
 
-class c_node_event {
+class c_node_event
+{
 public:
     e_node_event_type type;
-    c_node* target;
+    c_node *target;
 
-    void stop_propagation() {
+
+
+    ~c_node_event()
+    {
+    }
+    c_node_event()
+    {
+    }
+    c_node_event(c_node *_target, e_node_event_type _type) : type(_type), target(_target)
+
+    {
+        
         _stop_propagation = true;
     }
     bool _stop_propagation = false;
 
-
-
-
-    template<typename T>
-    T* as() {
-        return (T*)(this);
+    void stop_propagation();
+    template <typename T>
+    T *as()
+    {
+        return (T *)(this);
     }
 };

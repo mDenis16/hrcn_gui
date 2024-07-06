@@ -21,39 +21,24 @@ set(DEMO_APP_DIR "${CMAKE_CURRENT_LIST_DIR}/demo" CACHE PATH "Application direct
 set(BLEND2D_DIR "${APP_DIR}/libs/blend2d" CACHE PATH "Location of 'blend2d'")
 
 
+set(ASMJIT_DIR "${APP_DIR}/libs/asmjit")
+
 
 add_subdirectory(libs/blend2d)
 add_subdirectory(libs/yoga/yoga)
 add_subdirectory(libs/glfw)
 
+
 include_directories(  ${APP_DIR}/src libs/yoga ${BLEND2D_DIR}/src)
 
+file(GLOB_RECURSE  SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
 
-set(HRCN_GUI_SRC_LIST
- ${APP_DIR}/src/base/node.cpp
- ${APP_DIR}/src/components/window.cpp
-        src/components/navbar.cpp
-        src/components/navbar.hpp
-        src/components/navbutton.cpp
-        src/components/navbutton.h
-        src/base/node_event.hpp
-        src/base/mouse_event.hpp
-        src/base/input_context.cpp
-        src/base/input_context.hpp
-        src/base/keyboard_event.hpp
-        src/base/scroll_event.hpp
-        src/components/c_text.cpp
-        src/components/c_text.hpp
-        src/base/c_event_listener.cpp
-        src/base/c_event_listener.h
-        src/base/events/mouse_enter_event.hpp
-)
+message(${SOURCES})
 
 
-message(${HRCN_GUI_SRC_LIST})
-
-
-add_library(gui  ${HRCN_GUI_SRC_LIST})
+add_library(gui STATIC  ${SOURCES})
 
 target_link_libraries(gui glfw blend2d yogacore )
 
@@ -64,26 +49,25 @@ link_libraries(${GLFW_LIBRARY_DIRS})
 
 # opengl
 find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIRS})
+include_directories(${OPENGL_INCLUDE_DIRS} ${APP_DIR}/libs/imgui  ${APP_DIR}/libs/glad  ${BLEND2D_DIR} ${BLEND2D_DIR}/src)
 
-# glew
-find_package(GLEW REQUIRED)
-include_directories(${GLEW_INCLUDE_DIRS})
+
 
 
 add_executable(gui-demo 
 
+${APP_DIR}/libs/imgui/imgui.cpp
+${APP_DIR}/libs/imgui/imgui_draw.cpp
+${APP_DIR}/libs/imgui/imgui_tables.cpp
+${APP_DIR}/libs/imgui/imgui_widgets.cpp
+${APP_DIR}/libs/imgui/backends/imgui_impl_glfw.cpp
+${APP_DIR}/libs/imgui/backends/imgui_impl_opengl3.cpp
+
+${DEMO_APP_DIR}/gui.cpp
     ${DEMO_APP_DIR}/arm_opengl.cpp
-    ${DEMO_APP_DIR}/gui.cpp
-        ${DEMO_APP_DIR}/imgui/imgui.cpp
-        ${DEMO_APP_DIR}/imgui/imgui_draw.cpp
-        ${DEMO_APP_DIR}/imgui/imgui_tables.cpp
-        ${DEMO_APP_DIR}/imgui/imgui_widgets.cpp
-        ${DEMO_APP_DIR}/imgui/backends/imgui_impl_glfw.cpp
-        ${DEMO_APP_DIR}/imgui/backends/imgui_impl_opengl3.cpp
+
     )
 
 target_link_libraries(gui-demo glfw
 ${OPENGL_LIBRARIES}
-GLEW::GLEW
 gui)

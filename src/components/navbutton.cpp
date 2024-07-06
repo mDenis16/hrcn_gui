@@ -5,9 +5,12 @@
 #include "navbutton.h"
 #include <iostream>
 
-#include "../../../../../../Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/System/Library/Frameworks/CoreGraphics.framework/Headers/CGPDFDictionary.h"
-#include "base/mouse_event.hpp"
 
+#include <base/mouse_event.hpp>
+
+#include <base/style/style_manager.hpp>
+#include <base/yg_enums.hpp>
+#include <base/style/style_manager.hpp>
 
 c_navbutton::c_navbutton() {
 

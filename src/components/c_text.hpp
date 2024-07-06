@@ -29,8 +29,9 @@ public:
     constexpr void set_text() {
         //  memcpy(str, str.get(), str.size());
         for(int i = 0; i < str.size(); i++)
-            local_Str[i] = str.at(i);
+            local_Str[i ] = str.at(i);
 
+        local_Str[str.size()] = '\0';
 
         str_size = str.size();
     }
