@@ -29,7 +29,8 @@ private:
 
     friend class c_node;
     friend class c_text;
-
+    friend class c_transition_background_color;
+    friend class c_transition_border_color;
 public:
     c_node *node;
 
@@ -63,6 +64,8 @@ public:
     c_style_manager &background_color(BLRgba32 color);
     c_style_manager &border_color(BLRgba32 color);
     c_style_manager &border_stroke(float value);
+    c_style_manager &padding(e_edge edge, float value);
+
 
     c_style_manager &gap(e_gutter gutter, float value);
     c_style_manager &flex_direction(e_flex_direction direction);

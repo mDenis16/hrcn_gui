@@ -27,8 +27,7 @@ void c_navbar::render(BLContext &context) {
     c_node::render(context);
 
 
-    std::cout << "c_navbar::render " << std::endl;
-    //printf("render");
+  
 }
 
 void c_navbar::on_event(c_node_event *event) {

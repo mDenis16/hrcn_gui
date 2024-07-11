@@ -12,6 +12,9 @@
 class c_style_manager;
 class c_transitions_manager;
 class c_event_listener;
+class c_effect;
+class c_state;
+class c_app_context;
 
 enum class e_node_event_type : uint8_t;
 
@@ -25,6 +28,8 @@ private:
 public:
     c_node(/* args */);
     ~c_node();
+
+    c_app_context *app_context;
 
     bool mouse_hover = false;
 
@@ -41,14 +46,15 @@ public:
     bool is_root = false;
     int child_index = 0;
 
-    inline c_transitions_manager &transitions(int ms);
+    c_transitions_manager &transitions(int ms);
 
     int biggest_z_index = 0;
 
     c_node *parent = nullptr;
     int z_index = 0;
 
-    bool dirty_layout = false;
+    bool dirty_layout = true;
+    bool dirty = true;
 
     float scroll = 0.f;
     float max_scroll = 0.f;
@@ -60,11 +66,11 @@ public:
     std::uint32_t identifier = -1;
 
     c_event_listener *add_event_listener(e_node_event_type type, std::function<void(c_node_event *)> _fn);
-    // void remove_event_listener(c_event_listener* ev_listener);
+    void remove_event_listener(c_event_listener *_event_listener);
 
     inline static std::vector<c_node *> nodes;
 
-    void layout_update(BLPointI point);
+    virtual void layout_update(BLPointI point);
 
     virtual void add_child(c_node *node);
 
@@ -77,8 +83,10 @@ public:
     BLSize content_size();
 
     BLRect _content;
-    bool dirty = true;
-    bool layout_dirty = true;
+
+    // void update_transitions();
+
+
 
     BLRect calculate_bounding_box_of_children();
 
@@ -89,7 +97,7 @@ public:
     {
         dirty = true;
     }
- inline void mark_layout_as_dirty()
+    inline void mark_layout_as_dirty()
     {
         dirty_layout = true;
     }
@@ -102,6 +110,15 @@ public:
     {
         return dirty_layout;
     }
+
+    std::vector<c_state *> _states;
+    std::vector<c_effect *> _effects;
+
+    void use_state(c_state *state);
+
+    void use_effect(std::function<void()> _callback, std::vector<c_state *> _states);
+
+    void check_for_state_changes();
 
     template <str_to_hash str>
     __inline void set_node_identifier()
@@ -121,7 +138,9 @@ public:
         return nullptr;
     }
 
-    bool require_rerender(bool& _dirty_layout);
+    bool require_rerender(bool &_dirty_layout);
+
+    void ensure_children_app_context(c_app_context *context);
 
     bool hovering = false;
 

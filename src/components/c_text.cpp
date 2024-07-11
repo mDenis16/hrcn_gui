@@ -44,6 +44,7 @@ YGSize c_text::measure(YGNodeConstRef node,
                        YGMeasureMode heightMode)
 {
 
+    std::cout << "c_text::measure called" << std::endl;
     auto item = reinterpret_cast<c_text *>(YGNodeGetContext(node));
 
     auto &gb = item->gb;

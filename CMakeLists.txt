@@ -35,7 +35,6 @@ file(GLOB_RECURSE  SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
 
-message(${SOURCES})
 
 
 add_library(gui STATIC  ${SOURCES})
@@ -64,6 +63,10 @@ ${APP_DIR}/libs/imgui/backends/imgui_impl_glfw.cpp
 ${APP_DIR}/libs/imgui/backends/imgui_impl_opengl3.cpp
 
 ${DEMO_APP_DIR}/gui.cpp
+
+
+${DEMO_APP_DIR}/components/checkbox.cpp
+${DEMO_APP_DIR}/components/slider.cpp
     ${DEMO_APP_DIR}/arm_opengl.cpp
 
     )

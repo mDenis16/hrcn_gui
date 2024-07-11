@@ -1,5 +1,7 @@
 #pragma once
 #include <components/window.hpp>
+#include <mutex>
+#include <deque>
 
 class c_input_context {
 public:
@@ -18,6 +20,13 @@ public:
     void mouse_callback(int button, int action);
 
     void scroll_callback(float offsetX, float offsetY) ;
+
+
+    void process_events();
+
+    std::deque<c_node_event*> _node_events;
+    std::mutex _node_events_mutex;
+    
 };
 
 

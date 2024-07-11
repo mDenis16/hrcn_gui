@@ -1,3 +1,5 @@
+
+#include <base/app_context.hpp> 
 #include "node.hpp"
 
 #include "mouse_event.hpp"
@@ -10,6 +12,9 @@
 #include <base/event_listener.hpp>
 #include <base/events/types.hpp>
 
+#include <base/effect.hpp>
+#include <base/state.hpp>
+
 c_node::c_node(/* args */)
 {
     node_ref = YGNodeNew();
@@ -20,7 +25,7 @@ c_node::c_node(/* args */)
     _transitions = new c_transitions_manager(this);
 
     nodes.push_back(this);
-    YGNodeStyleSetPositionType(node_ref, YGPositionTypeRelative);
+    //   YGNodeStyleSetPositionType(node_ref, YGPositionTypeRelative);
     YGNodeSetAlwaysFormsContainingBlock(node_ref, true /*alwaysFormsContainingBlock*/);
 };
 
@@ -28,11 +33,42 @@ c_node::~c_node()
 {
 }
 
+void c_node::use_state(c_state *state)
+{
+
+    state->node = this;
+    _states.push_back((c_state *)state);
+}
+void c_node::use_effect(std::function<void()> _callback, std::vector<c_state *> _states)
+{
+
+    auto effect = new c_effect(this, _callback, _states);
+
+    _effects.push_back(effect);
+}
+void c_node::check_for_state_changes()
+{
+    for (auto &state : _states)
+        if (state->require_update())
+            state->consume_update();
+}
+
 c_event_listener *c_node::add_event_listener(e_node_event_type type, std::function<void(c_node_event *)> _fn)
 {
-    auto listener = new c_event_listener(type, this, _fn);
-    _event_listeners.push_back(listener);
+    c_event_listener* listener = new c_event_listener(type, this, _fn);
+    c_app_context::get_current()->add_event_listener(this, listener);
+
+
+
+    std::cout << " add_event_listener " << listener << std::endl;
+
+    for(auto& listener :  c_app_context::get_current()->_event_listeners)
+        std::cout << "event_listener_ptr " << listener << std::endl;
     return listener;
+}
+void c_node::remove_event_listener(c_event_listener *_event_listener)
+{
+     c_app_context::get_current()->remove_event_listener(_event_listener);
 }
 
 void c_node::render(BLContext &context)
@@ -65,6 +101,7 @@ void c_node::render(BLContext &context)
 
 void c_node::layout_update(BLPointI point)
 {
+
     box.x = point.x + YGNodeLayoutGetLeft(node_ref);
     box.y = point.y + YGNodeLayoutGetTop(node_ref);
     box.w = YGNodeLayoutGetWidth(node_ref);
@@ -75,10 +112,7 @@ void c_node::layout_update(BLPointI point)
     biggest_z_index = z_index;
 
     for (auto &child : children)
-    {
         child->layout_update(BLPointI(box.x, box.y));
-    }
-
     content_box = calculate_bounding_box_of_children();
 
     // content_box.h = content_size().h;
@@ -141,10 +175,21 @@ void c_node::add_child(c_node *node)
 {
     YGNodeInsertChild(node_ref, node->node_ref, children.size());
     node->parent = this;
+    node->app_context = app_context;
     node->child_index = children.size();
     children.push_back(node);
+    mark_layout_as_dirty();
+    ensure_children_app_context(app_context);
 }
 
+void c_node::ensure_children_app_context(c_app_context *context)
+{
+    if (app_context != context)
+        app_context = context;
+
+    for (auto &child : children)
+        child->ensure_children_app_context(context);
+}
 void c_node::handle_event(c_node_event *event)
 {
     /*   if (event->ev_type == e_event_type::mouse) {
@@ -203,33 +248,42 @@ void c_node::on_event(c_node_event *event)
 {
 }
 
-bool c_node::require_rerender(bool& _dirty_layout)
+// void c_node::update_transitions()
+// {
+
+//     for (auto &transition : _transitions->_list)
+//     {
+
+//         transition->run();
+
+//         if (transition->executed)
+//         {
+
+//             auto itx = std::find(_transitions->_list.begin(), _transitions->_list.end(), transition);
+//             if (itx != _transitions->_list.end())
+//                 _transitions->_list.erase(itx);
+//         }
+//     }
+//     for (auto &node : children)
+//         node->update_transitions();
+// }
+
+bool c_node::require_rerender(bool &_dirty_layout)
 {
+
     auto d = this;
     bool drty = false;
     for (auto &node : nodes)
     {
 
-        // if (node->_transitions) {
-        //     if (node->_transitions->_transitions.size()) {
-        //         for(auto& trans :   node->_transitions->_transitions) {
-        //             if (!trans->executed) {
-        //                 trans->run();
-        //                 d->dirty_layout = true;
-        //                 d->dirty = true;
-        //                 node->dirty = true;
-        //                 drty = true;
-        //             }
-        //         }
-        //     }
-        // }
+        if (node->parent == nullptr || node->is_root)
+            continue;
 
-        if (node->dirty || node->layout_dirty)
+        if (node->dirty || node->dirty_layout)
         {
-            if (node->layout_dirty)
-                _dirty_layout =true;
-            // assert(node->parent == nullptr  &&  "Dirty node without parent, unable to update.");
-            return true;
+            if (node->dirty_layout)
+                _dirty_layout = true;
+            drty = true;
         }
     }
     return drty;
@@ -248,6 +302,6 @@ BLRect c_node::calc_total_size()
 
 c_transitions_manager &c_node::transitions(int ms)
 {
-
+    _transitions->milliseconds = ms;
     return *_transitions;
 }

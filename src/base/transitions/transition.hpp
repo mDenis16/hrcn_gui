@@ -15,6 +15,10 @@ public:
     e_transition_type type;
     bool executed = false;
 
+
+    float progress = 0.f;
+
+    
     c_node* node = nullptr;
 
 
@@ -24,5 +28,11 @@ public:
 
     }
 
-    virtual  void run()  =0;
+
+    bool _has_run = false;
+    
+    
+
+    virtual void run();
+
 };

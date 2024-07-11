@@ -53,14 +53,18 @@ void c_window::render(BLContext &context)
     if (!require_rerender(_dirty_layout))
         return;
 
+    std::cout << "c_window::render " << std::endl;
+ 
+
     if (_dirty_layout)
     {
         YGNodeCalculateLayout(YGNodeGetOwner(node_ref), YGUndefined, YGUndefined, YGDirectionLTR);
-
+    std::cout << "c_window::layout update " << std::endl;
         BLPointI point = BLPointI(YGNodeLayoutGetLeft(YGNodeGetOwner(node_ref)), YGNodeLayoutGetTop(YGNodeGetOwner(node_ref)));
 
         layout_update(point);
-        
+        dirty_layout = false;
+    
     }
     context.clearAll();
 

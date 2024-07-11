@@ -55,6 +55,12 @@ c_style_manager &c_style_manager::width(float value)
     return *this;
 }
 
+c_style_manager &c_style_manager::padding(e_edge edge, float value)
+{
+    YGNodeStyleSetPadding(node_ref, (YGEdge)edge, value);
+    node->mark_layout_as_dirty();
+    return *this;
+}
 c_style_manager &c_style_manager::margin(e_edge edge, float value)
 {
     YGNodeStyleSetMargin(node_ref, (YGEdge)edge, value);

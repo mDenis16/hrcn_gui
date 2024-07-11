@@ -15,6 +15,7 @@ public:
 
     inline void set_font(BLFont font) { this->font = font; }
 
+    
 
     YGNodeRef _inner;
 
@@ -37,9 +38,26 @@ public:
     }
 
 
+     void set_text(std::string str) {
+        //  memcpy(str, str.get(), str.size());
+        for(int i = 0; i < str.size(); i++)
+            local_Str[i ] = str.at(i);
+
+        local_Str[str.size()] = '\0';
+
+        str_size = str.size();
+
+         YGNodeMarkDirty(node_ref);
+
+        mark_layout_as_dirty();
+    }
+
+
     inline void set_color(BLRgba32 color) {
         this->color = color;
     }
+
+    
 
 
 
