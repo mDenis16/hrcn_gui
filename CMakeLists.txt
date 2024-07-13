@@ -64,7 +64,7 @@ ${APP_DIR}/libs/imgui/backends/imgui_impl_opengl3.cpp
 
 ${DEMO_APP_DIR}/gui.cpp
 
-
+${DEMO_APP_DIR}/components/combobox.cpp
 ${DEMO_APP_DIR}/components/checkbox.cpp
 ${DEMO_APP_DIR}/components/slider.cpp
     ${DEMO_APP_DIR}/arm_opengl.cpp

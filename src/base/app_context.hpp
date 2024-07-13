@@ -31,7 +31,8 @@ public:
 
     void add_event_listener(c_node *node, c_event_listener *listener);
     void remove_event_listener( c_event_listener *listener);
-  
+    void remove_event_listeners_for_node(c_node* node);
+void remove_transitions_for_node(c_node *node);
     std::recursive_mutex _context_mutext;
 
     inline static c_app_context* _current_context = nullptr;

@@ -21,14 +21,20 @@ void c_app_context::execute()
 
     process_events();
 
-
     for (auto &transition : _transitions)
     {
         if (transition->executed)
         {
-            auto itx = std::find(_transitions.begin(), _transitions.end(), transition);
-            if (itx != _transitions.end())
-                _transitions.erase(itx);
+            _transitions.erase(std::remove_if(_transitions.begin(), _transitions.end(), [transition](c_transition *_t)
+                                              {
+       if ( transition == _t)
+        {
+           delete transition;
+            return true;
+        }
+        return false; }),
+                               _transitions.end());
+
             continue;
         }
         transition->run();
@@ -55,6 +61,7 @@ void c_app_context::process_event(c_node_event *event)
 {
     if (event->type == e_node_event_type::mouse_move_event)
     {
+
         c_mouse_move_event *mouse_move_event = event->as<c_mouse_move_event>();
         auto cursor = mouse_move_event->position;
 
@@ -64,6 +71,7 @@ void c_app_context::process_event(c_node_event *event)
             {
                 if (listener->node)
                 {
+
                     auto &box = listener->node->box;
                     if (cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h)
                     {
@@ -108,6 +116,7 @@ void c_app_context::process_event(c_node_event *event)
             {
                 if (listener->node)
                 {
+                    event->target = listener->node;
                     auto &box = listener->node->box;
 
                     if (listener->type == e_node_event_type::mouse_down_event)
@@ -129,6 +138,8 @@ void c_app_context::process_event(c_node_event *event)
                         }
                     }
                 }
+                if (event->_stop_propagation)
+                    break;
             }
         }
     }
@@ -136,16 +147,43 @@ void c_app_context::process_event(c_node_event *event)
 
 void c_app_context::add_event_listener(c_node *node, c_event_listener *listener)
 {
-    std::lock_guard<std::recursive_mutex> lock(_context_mutext);
     std::cout << "add_event_listener " << listener << std::endl;
     _event_listeners.push_back(listener);
 }
+
+void c_app_context::remove_transitions_for_node(c_node *node) {
+     _transitions.erase(std::remove_if(_transitions.begin(), _transitions.end(), [node](c_transition *transition)
+                                          {
+       if ( transition->node == node)
+        {
+              delete transition;
+            return true;
+        }
+        return false; }),
+                           _transitions.end());
+}
+void c_app_context::remove_event_listeners_for_node(c_node *node)
+{
+    std::cout << " remove_event_listeners_for_node called " << std::endl;
+    _event_listeners.erase(std::remove_if(_event_listeners.begin(), _event_listeners.end(), [node](c_event_listener *listener)
+                                          {
+       if ( listener->node == node)
+        {
+          //  delete listener;
+            return true;
+        }
+        return false; }),
+                           _event_listeners.end());
+}
 void c_app_context::remove_event_listener(c_event_listener *listener)
 {
-    std::lock_guard<std::recursive_mutex> lock(_context_mutext);
-    {
-        auto itx = std::find(_event_listeners.begin(), _event_listeners.end(), listener);
-        if (itx != _event_listeners.end())
-            _event_listeners.erase(itx);
-    }
+    _event_listeners.erase(std::remove_if(_event_listeners.begin(), _event_listeners.end(), [listener](c_event_listener *list)
+                                          {
+        if ( listener == list)
+        {
+            delete listener;
+            return true;
+        }
+        return false; }),
+                           _event_listeners.end());
 }

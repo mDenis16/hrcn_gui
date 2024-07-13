@@ -29,6 +29,8 @@ public:
     c_node(/* args */);
     ~c_node();
 
+    bool is_text = false;
+
     c_app_context *app_context;
 
     bool mouse_hover = false;
@@ -74,7 +76,9 @@ public:
 
     virtual void add_child(c_node *node);
 
+    virtual void remove_child (c_node *node);
     virtual void on_event(c_node_event *event);
+
 
     void handle_event(c_node_event *event);
 
@@ -83,6 +87,8 @@ public:
     BLSize content_size();
 
     BLRect _content;
+
+    void destroy();
 
     // void update_transitions();
 

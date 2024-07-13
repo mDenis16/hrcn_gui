@@ -31,15 +31,17 @@ public:
     c_node_event()
     {
     }
-    c_node_event(c_node *_target, e_node_event_type _type) : type(_type), target(_target)
-
-    {
+    c_node_event(c_node *_target, e_node_event_type _type) : type(_type), target(_target){
         
-        _stop_propagation = true;
     }
+
+
+    
     bool _stop_propagation = false;
 
-    void stop_propagation();
+    void stop_propagation(){
+        _stop_propagation= true;
+    }
     template <typename T>
     T *as()
     {

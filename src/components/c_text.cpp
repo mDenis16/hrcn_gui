@@ -7,11 +7,15 @@
 
 c_text::c_text()
 {
+    is_text = true;
 
     YGNodeSetContext(node_ref, this);
     YGNodeSetMeasureFunc(node_ref, &c_text::measure);
 }
 
+c_text::~c_text(){
+    std::cout << "c_text destructed " << std::endl;
+}
 void c_text::render(BLContext &context)
 {
     c_node::render(context);

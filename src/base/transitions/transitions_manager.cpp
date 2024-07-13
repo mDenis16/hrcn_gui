@@ -23,11 +23,12 @@ c_transitions_manager &c_transitions_manager::position(e_edge edge, float value)
 }
 c_transitions_manager &c_transitions_manager::background_color(BLRgba32 color)
 {
+    
     std::cout << " c_transitions_manager::background_color " << std::endl;
     auto transition = new c_transition_background_color(node, color, milliseconds);
     _list.push_back(transition);
     assert(node->app_context);
-
+    
     node->app_context->_transitions.push_back(transition);
     return *this;
 }
