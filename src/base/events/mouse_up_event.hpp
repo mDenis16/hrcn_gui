@@ -5,6 +5,6 @@
 class c_mouse_up_event : public c_node_event
 {
 public:
-    BLPoint position;
+
     c_mouse_up_event();
 };

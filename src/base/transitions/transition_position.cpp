@@ -20,7 +20,7 @@ void c_transition_position::run()
 {
 
     c_transition::run();
-    std::cout << "c_transition_position << progress   " << progress << std::endl;
+  //  std::cout << "c_transition_position << progress   " << progress << std::endl;
     auto value = std::lerp(old_value, new_value, 1.f - std::cos((progress * 3.14f) * 0.5f));
 
     YGNodeStyleSetPosition(node->node_ref, (YGEdge)_edge, value);

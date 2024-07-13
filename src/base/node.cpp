@@ -15,7 +15,9 @@
 #include <base/effect.hpp>
 #include <base/state.hpp>
 #include <mutex>
+#include <base/yg_enums.hpp>
 
+static int muie = 0;
 c_node::c_node(/* args */)
 {
     node_ref = YGNodeNew();
@@ -26,35 +28,59 @@ c_node::c_node(/* args */)
     _transitions = new c_transitions_manager(this);
 
     nodes.push_back(this);
+    global_index = muie++;
     //   YGNodeStyleSetPositionType(node_ref, YGPositionTypeRelative);
     YGNodeSetAlwaysFormsContainingBlock(node_ref, true /*alwaysFormsContainingBlock*/);
 };
 
+void c_node::safe_destroy()
+{
+    this->parent->remove_child(this);
+    this->destroy();
+}
 void c_node::destroy()
 {
-    std::cout << "c_node destroy [is_text] " << is_text << std::endl;
 
-    if (parent)
-        parent->remove_child(this);
+    ensure_children_app_context();
 
-    for (auto &child : children)
-        remove_child(child);
+    if (app_context == nullptr)
+    {
+        std::cout << "c_node::destroy() app_context is null " << std::endl;
+        return;
+    }
+
+    std::cout << "app_context " << app_context << std::endl;
 
     app_context->remove_event_listeners_for_node(this);
-    app_context->remove_transitions_for_node(this);
 
-    delete this;
+    std::cout << "c_node destroy [is_text] " << is_text << std::endl;
+
+    for (unsigned int i = 0; i < children.size(); i++)
+        children[i]->destroy();
+
+    // if (parent)
+    ///   parent->remove_child(this);
+
+    nodes.erase(std::remove_if(nodes.begin(), nodes.end(), [this](c_node *node)
+                               { return node == this; }));
+
+    YGNodeFree(node_ref);
+
+    children.clear();
+
+    // app_context->remove_transitions_for_node(this);
+
+    std::cout << "nodes.size() " << nodes.size() << std::endl;
 }
 c_node::~c_node()
 {
-    YGNodeFree(node_ref);
 }
 
 void c_node::use_state(c_state *state)
 {
 
     state->node = this;
-    //   _states.push_back((c_state *)state);
+    _states.push_back((c_state *)state);
 }
 void c_node::use_effect(std::function<void()> _callback, std::vector<c_state *> _states)
 {
@@ -65,6 +91,9 @@ void c_node::use_effect(std::function<void()> _callback, std::vector<c_state *> 
 }
 void c_node::check_for_state_changes()
 {
+    for (auto &state : _states)
+        if (state->require_update())
+            state->consume_update();
 }
 
 c_event_listener *c_node::add_event_listener(e_node_event_type type, std::function<void(c_node_event *)> _fn)
@@ -72,6 +101,7 @@ c_event_listener *c_node::add_event_listener(e_node_event_type type, std::functi
     c_event_listener *listener = new c_event_listener(type, this, _fn);
     c_app_context::get_current()->add_event_listener(this, listener);
 
+    listener->absolute = absolute_anchestor(listener->z_index);
     return listener;
 }
 void c_node::remove_event_listener(c_event_listener *_event_listener)
@@ -84,17 +114,11 @@ void c_node::render(BLContext &context)
     // if (overflow_y)
     //   context.clipToRect(box);
 
-    bool any_children_with_bigger_z_index = false;
-
-    for (auto &child : children)
-        if (child->z_index > z_index)
-            any_children_with_bigger_z_index = true;
-
     context.setFillStyle(_style->_background_color);
     context.fillRect(BLRectI((int)box.x, (int)box.y, (int)box.w, (int)box.h));
 
-    if (!any_children_with_bigger_z_index)
-        for (auto &child : children)
+    for (auto &child : children)
+        if (YGNodeStyleGetPositionType(child->node_ref) == (YGPositionType)e_position::position_type_relative)
             child->render(context);
 
     context.setFillStyle(_style->_border_color);
@@ -112,11 +136,34 @@ void c_node::render(BLContext &context)
     //  if (overflow_y)
     //        context.restoreClipping();
 
-    if (any_children_with_bigger_z_index)
-        for (auto &child : children)
-            child->render(context);
+    if (app_context == nullptr)
+    {
+        context.setFillStyle(BLRgba32(0, 255, 0, 255));
+        context.fillRect(BLRectI((int)box.x, (int)box.y, 50, 50));
+    }
 
     dirty = false;
+}
+bool c_node::absolute_anchestor(int &z_index)
+{
+    c_node *current = this;
+
+    int highest = 0;
+    while (current != nullptr)
+    {
+        if (current->absolute)
+        {
+            if (current->z_index >= highest)
+            {
+                z_index = current->z_index;
+                highest = z_index;
+            }
+            return true;
+        }
+        current = current->parent;
+    }
+
+    return false;
 }
 
 void c_node::layout_update(BLPointI point)
@@ -202,15 +249,14 @@ void c_node::add_child(c_node *node)
 {
     YGNodeInsertChild(node_ref, node->node_ref, children.size());
     node->parent = this;
-    node->app_context = app_context;
     node->child_index = children.size();
     children.push_back(node);
     mark_layout_as_dirty();
-    ensure_children_app_context(app_context);
+    ensure_children_app_context();
 }
 void c_node::remove_child(c_node *node)
 {
-    YGNodeRemoveChild(this->node_ref, node->node_ref);
+
     children.erase(std::remove_if(children.begin(), children.end(),
                                   [node](c_node *c)
                                   { return c == node; }),
@@ -218,13 +264,37 @@ void c_node::remove_child(c_node *node)
 
     mark_layout_as_dirty();
 }
-void c_node::ensure_children_app_context(c_app_context *context)
+void c_node::ensure_children_app_context()
 {
-    if (app_context != context)
-        app_context = context;
 
+    if (app_context == nullptr)
+        return;
+
+    for (auto &listener : app_context->_event_listeners)
+    {
+        if (listener->node == this)
+            listener->absolute = absolute_anchestor(listener->z_index);
+    }
     for (auto &child : children)
-        child->ensure_children_app_context(context);
+    {
+        child->app_context = app_context;
+        child->ensure_children_app_context();
+    }
+
+    // else
+    // {
+    //     c_node *currrent = this;
+
+    //     while (currrent != nullptr)
+    //     {
+    //         if (currrent->app_context)
+    //         {
+    //              app_context = currrent->app_context;
+    //              break;
+    //         }
+    //         currrent = currrent->parent;
+    //     }
+    // }
 }
 void c_node::handle_event(c_node_event *event)
 {
@@ -309,6 +379,7 @@ bool c_node::require_rerender(bool &_dirty_layout)
 
     auto d = this;
     bool drty = false;
+
     for (c_node *node : nodes)
     {
 

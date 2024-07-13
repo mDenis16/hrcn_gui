@@ -137,6 +137,8 @@ c_style_manager &c_style_manager::align_items(e_align value)
 }
 c_style_manager &c_style_manager::position_type(e_position position)
 {
+    if (position == e_position::position_type_absolute) 
+        node->absolute = true;
     YGNodeStyleSetPositionType(node_ref, (YGPositionType)position);
     node->mark_layout_as_dirty();
     return *this;

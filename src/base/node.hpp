@@ -31,7 +31,9 @@ public:
 
     bool is_text = false;
 
-    c_app_context *app_context;
+    int global_index = 0;
+
+    c_app_context *app_context = nullptr;
 
     bool mouse_hover = false;
 
@@ -81,7 +83,7 @@ public:
 
 
     void handle_event(c_node_event *event);
-
+    void safe_destroy();
     BLRect calc_total_size();
 
     BLSize content_size();
@@ -146,7 +148,9 @@ public:
 
     bool require_rerender(bool &_dirty_layout);
 
-    void ensure_children_app_context(c_app_context *context);
+    bool absolute_anchestor(int& z_index);
+
+    void ensure_children_app_context();
 
     bool hovering = false;
 
@@ -155,6 +159,8 @@ public:
 
     BLRgba32 bg_color;
 
+
+    bool absolute = false;
     BLRgba32 border_color;
 
     YGNodeRef node_ref;

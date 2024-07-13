@@ -14,6 +14,8 @@ public:
     uint8_t priority = 0;
     e_node_event_type type;
 
+    int z_index = 0;
+    bool absolute = false;
     std::function<void(c_node_event *event)> callback;
 
 

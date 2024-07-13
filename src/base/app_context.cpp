@@ -8,7 +8,11 @@
 #include <base/events/mouse_down_event.hpp>
 #include <base/events/mouse_up_event.hpp>
 #include <base/events/types.hpp>
+#include <base/yg_enums.hpp>
+
 #include <iostream>
+#include <algorithm>
+
 c_app_context::c_app_context()
 {
 }
@@ -18,8 +22,6 @@ c_app_context::~c_app_context()
 
 void c_app_context::execute()
 {
-
-    process_events();
 
     for (auto &transition : _transitions)
     {
@@ -39,6 +41,7 @@ void c_app_context::execute()
         }
         transition->run();
     }
+    process_events();
 }
 
 void c_app_context::process_events()
@@ -56,91 +59,107 @@ void c_app_context::push_event(c_node_event *_event)
     std::lock_guard<std::recursive_mutex> lock(_context_mutext);
     _events.push_back(_event);
 }
-
-void c_app_context::process_event(c_node_event *event)
+void c_app_context::process_mouse_move(c_mouse_move_event *event)
 {
-    if (event->type == e_node_event_type::mouse_move_event)
+    for (int i = 0; i < _event_listeners.size(); i++)
     {
-
-        c_mouse_move_event *mouse_move_event = event->as<c_mouse_move_event>();
-        auto cursor = mouse_move_event->position;
-
-        for (int i = 0; i < _event_listeners.size(); i++)
+        auto &listener = _event_listeners.at(i);
         {
-            auto &listener = _event_listeners.at(i);
+            if (listener->node)
             {
-                if (listener->node)
+                auto &cursor = event->position;
+                auto &box = listener->node->box;
+                if (cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h)
                 {
-
-                    auto &box = listener->node->box;
-                    if (cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h)
+                    if (listener->type == e_node_event_type::mouse_enter_event && !listener->node->hovering)
                     {
-                        if (listener->type == e_node_event_type::mouse_move_event)
-                        {
-                            auto ev = new c_mouse_move_event();
-                            ev->position = cursor;
-                            ev->target = listener->node;
+                        auto ev = new c_mouse_enter_event();
+                        std::cout << "c_mouse_enter_event " << std::endl;
+                        ev->target = listener->node;
 
-                            listener->callback((c_node_event *)ev);
-                        }
-                        else if (listener->type == e_node_event_type::mouse_enter_event && !listener->node->hovering)
-                        {
-                            auto ev = new c_mouse_enter_event();
-                            ev->target = listener->node;
-
-                            listener->callback((c_node_event *)ev);
-                            listener->node->hovering = true;
-                        }
+                        listener->callback((c_node_event *)ev);
+                        listener->node->hovering = true;
                     }
-                    else
+                    else if (listener->type == e_node_event_type::mouse_move_event)
                     {
-                        if (listener->type == e_node_event_type::mouse_exit_event && listener->node->hovering)
-                        {
-                            auto ev = new c_mouse_exit_event();
-                            ev->target = listener->node;
+                        auto ev = new c_mouse_move_event();
+                        ev->position = cursor;
+                        ev->target = listener->node;
 
-                            listener->callback((c_node_event *)ev);
-                            listener->node->hovering = false;
-                        }
+                        listener->callback((c_node_event *)ev);
+                    }
+                }
+                else
+                {
+                    if (listener->type == e_node_event_type::mouse_exit_event && listener->node->hovering)
+                    {
+                        auto ev = new c_mouse_exit_event();
+                        ev->target = listener->node;
+                        std::cout << "c_mouse_exit_event " << std::endl;
+                        listener->callback((c_node_event *)ev);
+                        listener->node->hovering = false;
                     }
                 }
             }
         }
     }
+}
+
+void c_app_context::process_event(c_node_event *event)
+{
+
+    if (event->type == e_node_event_type::mouse_move_event)
+        process_mouse_move(event->as<c_mouse_move_event>());
     else
     {
-        for (int i = 0; i < _event_listeners.size(); i++)
+        std::vector<c_event_listener *> absolute_listenrs;
+       
+       
+        for (auto &listener : _event_listeners)
         {
-            auto &listener = _event_listeners.at(i);
-            if (event->type == listener->type)
-            {
-                if (listener->node)
-                {
-                    event->target = listener->node;
-                    auto &box = listener->node->box;
+            if (listener->absolute)
+                absolute_listenrs.push_back(listener);
+        }
+         std::sort(absolute_listenrs.begin(), absolute_listenrs.end(), [](const c_event_listener* a, const c_event_listener* b)
+              { return a->z_index > b->z_index; });
+              
+        process_event_for_listeners(event, absolute_listenrs, true);
 
-                    if (listener->type == e_node_event_type::mouse_down_event)
-                    {
-                        auto cursor = event->as<c_mouse_down_event>()->position;
-                        if (cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h)
-                        {
-                            std::cout << "calling listener " << (void *)listener << std::endl;
-                            listener->callback(event);
-                        }
-                    }
-                    else if (listener->type == e_node_event_type::mouse_up_event)
-                    {
-                        auto cursor = event->as<c_mouse_up_event>()->position;
-                        if (cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h)
-                        {
-                            std::cout << "calling listener " << (void *)listener << std::endl;
-                            listener->callback(event);
-                        }
-                    }
-                }
-                if (event->_stop_propagation)
-                    break;
+        std::cout << " event->_stop_propagation " << event->_stop_propagation << std::endl;
+        if (event->_stop_propagation)
+            return;
+
+        process_event_for_listeners(event, _event_listeners);
+    }
+}
+void c_app_context::process_event_for_listeners(c_node_event *event, std::vector<c_event_listener *> listeners, bool absolute)
+{
+    for (int i = 0; i < listeners.size(); i++)
+    {
+        auto &listener = listeners.at(i);
+        if (event->type == listener->type)
+        {
+            if (listener->node == nullptr)
+                continue;
+
+            if (event->_stop_propagation)
+                continue;
+
+            if (listener->node->absolute && !absolute)
+                continue;
+
+            event->target = listener->node;
+            auto &box = listener->node->box;
+            auto &cursor = event->position;
+
+            if ((cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h))
+            {
+
+                listener->callback(event);
             }
+
+            if (event->_stop_propagation)
+                break;
         }
     }
 }
@@ -151,16 +170,17 @@ void c_app_context::add_event_listener(c_node *node, c_event_listener *listener)
     _event_listeners.push_back(listener);
 }
 
-void c_app_context::remove_transitions_for_node(c_node *node) {
-     _transitions.erase(std::remove_if(_transitions.begin(), _transitions.end(), [node](c_transition *transition)
-                                          {
+void c_app_context::remove_transitions_for_node(c_node *node)
+{
+    _transitions.erase(std::remove_if(_transitions.begin(), _transitions.end(), [node](c_transition *transition)
+                                      {
        if ( transition->node == node)
         {
               delete transition;
             return true;
         }
         return false; }),
-                           _transitions.end());
+                       _transitions.end());
 }
 void c_app_context::remove_event_listeners_for_node(c_node *node)
 {
@@ -169,6 +189,7 @@ void c_app_context::remove_event_listeners_for_node(c_node *node)
                                           {
        if ( listener->node == node)
         {
+             std::cout << "remove event listener for node" << std::endl;
           //  delete listener;
             return true;
         }
@@ -177,13 +198,24 @@ void c_app_context::remove_event_listeners_for_node(c_node *node)
 }
 void c_app_context::remove_event_listener(c_event_listener *listener)
 {
-    _event_listeners.erase(std::remove_if(_event_listeners.begin(), _event_listeners.end(), [listener](c_event_listener *list)
-                                          {
-        if ( listener == list)
-        {
-            delete listener;
+
+    std::cout << "listener " << listener << std::endl;
+    auto new_end = std::remove_if(_event_listeners.begin(), _event_listeners.end(), [listener](c_event_listener *list)
+                                  {
+        if (listener == list) {
+            std::cout << "removing event listener: " << list << std::endl;
             return true;
         }
-        return false; }),
-                           _event_listeners.end());
+        return false; });
+
+    _event_listeners.erase(new_end, _event_listeners.end());
+
+    std::cout << "_event_listeners.size() " << _event_listeners.size() << std::endl;
+}
+
+void c_app_context::for_each_node_if(std::function<bool(c_node *)> _if_callback, std::function<void(c_node *)> _callback)
+{
+    for (auto &node : _nodes)
+        if (_if_callback(node))
+            _callback(node);
 }

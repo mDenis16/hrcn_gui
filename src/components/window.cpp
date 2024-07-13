@@ -1,7 +1,10 @@
+#include <base/style/style_manager.hpp>
+
 #include "../base/node.hpp"
 #include "window.hpp"
 
 #include <fstream>
+#include <algorithm>
 
 c_window::c_window(BLSizeI size)
 {
@@ -54,21 +57,33 @@ void c_window::render(BLContext &context)
         return;
 
     std::cout << "c_window::render " << std::endl;
- 
 
     if (_dirty_layout)
     {
         YGNodeCalculateLayout(YGNodeGetOwner(node_ref), YGUndefined, YGUndefined, YGDirectionLTR);
-    std::cout << "c_window::layout update " << std::endl;
+        std::cout << "c_window::layout update " << std::endl;
         BLPointI point = BLPointI(YGNodeLayoutGetLeft(YGNodeGetOwner(node_ref)), YGNodeLayoutGetTop(YGNodeGetOwner(node_ref)));
 
         layout_update(point);
         dirty_layout = false;
-    
     }
     context.clearAll();
 
+    std::vector<c_node*> absolute_nodes;
+    for(auto& node : nodes)
+        if ( YGNodeStyleGetPositionType(node->node_ref) == YGPositionTypeAbsolute)
+            absolute_nodes.push_back(node);
+
+
     c_node::render(context);
+
+
+
+
+    std::sort(absolute_nodes.begin(), absolute_nodes.end(), [](const c_node* a, const c_node* b)
+              { return a->z_index > b->z_index; });
+    for(auto& node : absolute_nodes)
+        node->render(context);
 
     context.end();
 
