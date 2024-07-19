@@ -37,7 +37,9 @@ file(GLOB_RECURSE  SOURCES CONFIGURE_DEPENDS
 
 
 
-add_library(gui STATIC  ${SOURCES})
+add_library(gui STATIC  ${SOURCES}
+        src/base/allocator.cpp
+        src/base/allocator.h)
 
 target_link_libraries(gui glfw blend2d yogacore )
 

@@ -2,12 +2,13 @@
 
 class c_node;
 class c_app_context;
-
+class c_custom_allocator;
 
 class c_app
 {
 public:
     c_app_context *ctx;
+    c_custom_allocator* allocator;
 
     void on_frame();
 
