@@ -15,6 +15,8 @@ public:
     c_transitions_manager(c_node *_node);
     ~c_transitions_manager();
 
+
+    c_transitions_manager &margin(e_edge edge, float value);
     c_transitions_manager &position(e_edge edge, float value);
     c_transitions_manager &background_color(BLRgba32 color);
     c_transitions_manager &border_color(BLRgba32 color);

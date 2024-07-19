@@ -26,7 +26,7 @@ c_event_listener::c_event_listener(e_node_event_type _type, c_node *_node, std::
     //               return event_a->priority > event_b->priority;
     //           });
 
-    std::cout << "Created event listener " << _node->app_context << std::endl;
+  //  std::cout << "Created event listener " << _node->app_context << std::endl;
 }
 
 c_event_listener::~c_event_listener()

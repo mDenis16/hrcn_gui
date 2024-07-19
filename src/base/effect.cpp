@@ -7,7 +7,7 @@ c_effect::c_effect(c_node *_node, std::function<void()> _callback, std::vector<c
     for (auto &state : states)
     {
         state->node = _node;
-        state->effect = this;
+        state->_effects.push_back(this);
     }
 }
 c_effect::~c_effect()

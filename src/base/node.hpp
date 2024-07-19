@@ -39,6 +39,9 @@ public:
 
     virtual void render(BLContext &context);
 
+    c_event_listener* scroll_listener = nullptr;
+
+
     std::vector<c_event_listener *> _event_listeners;
 
     c_style_manager *_style;
@@ -55,7 +58,7 @@ public:
     int biggest_z_index = 0;
 
     c_node *parent = nullptr;
-    int z_index = 0;
+
 
     bool dirty_layout = true;
     bool dirty = true;
@@ -92,6 +95,7 @@ public:
 
     void destroy();
 
+    void clear();
     // void update_transitions();
 
 
@@ -153,6 +157,12 @@ public:
     void ensure_children_app_context();
 
     bool hovering = false;
+
+    std::function<void()> _on_init;
+    bool _init =false;
+    void on_init(std::function<void()> _callback) {
+        _on_init = _callback;
+    }
 
     BLRectI box;
     BLRect static_box;

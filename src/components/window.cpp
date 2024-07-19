@@ -60,20 +60,24 @@ void c_window::render(BLContext &context)
 
     if (_dirty_layout)
     {
-        YGNodeCalculateLayout(YGNodeGetOwner(node_ref), YGUndefined, YGUndefined, YGDirectionLTR);
+        YGNodeCalculateLayout(node_ref, 800.f, 600.f, YGDirectionLTR);
         std::cout << "c_window::layout update " << std::endl;
-        BLPointI point = BLPointI(YGNodeLayoutGetLeft(YGNodeGetOwner(node_ref)), YGNodeLayoutGetTop(YGNodeGetOwner(node_ref)));
+        BLPointI point = BLPointI(YGNodeLayoutGetLeft(node_ref), YGNodeLayoutGetTop(node_ref));
 
         layout_update(point);
         dirty_layout = false;
     }
     context.clearAll();
 
-    std::vector<c_node*> absolute_nodes;
-    for(auto& node : nodes)
-        if ( YGNodeStyleGetPositionType(node->node_ref) == YGPositionTypeAbsolute)
+   std::vector<c_node*> absolute_nodes;
+    for(auto& node : nodes) {
+        if (node->node_ref == nullptr) {
+            std::cout << "found null noderef " << std::endl;
+            continue;;
+        }
+        if ( YGNodeStyleGetPositionType(node->node_ref) == YGPositionTypeAbsolute && node->_style->get_z_index()  > 0)
             absolute_nodes.push_back(node);
-
+    }
 
     c_node::render(context);
 
@@ -81,7 +85,7 @@ void c_window::render(BLContext &context)
 
 
     std::sort(absolute_nodes.begin(), absolute_nodes.end(), [](const c_node* a, const c_node* b)
-              { return a->z_index > b->z_index; });
+              { return a->_style->get_z_index() > b->_style->get_z_index(); });
     for(auto& node : absolute_nodes)
         node->render(context);
 

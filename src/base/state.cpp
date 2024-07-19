@@ -10,11 +10,11 @@ c_state::~c_state(){
 }
 void c_state::consume_update(){
     std::cout << "Consume state update " << std::endl;
-    if ( effect->callback){
-    effect->callback();
+
+    for(auto& effect : _effects) {
+        if ( effect->callback)
+        effect->callback();
     }
-    else{
-        std::cout << "callback is empty " << std::endl;
-    }
+
     _update  = false;
 }

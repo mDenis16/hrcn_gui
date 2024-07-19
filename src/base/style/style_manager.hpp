@@ -12,6 +12,7 @@ enum class e_justify : uint8_t;
 enum class e_flex_direction : uint8_t;
 enum class e_display : uint8_t;
 enum class e_gutter : uint8_t;
+enum class e_wrap : uint8_t;
 
 class c_node;
 
@@ -21,6 +22,8 @@ private:
     BLRgba32 _background_color;
     BLRgba32 _border_color;
     BLRgba32 _color;
+
+    bool _overflow_hidden = false;
 
     float _border_stroke = 1.f;
     int _z_index = 0;
@@ -34,6 +37,9 @@ private:
 public:
     c_node *node;
 
+    int get_z_index() {
+        return _z_index;
+    }
     c_style_manager()
     {
     }
@@ -44,9 +50,15 @@ public:
     }
     YGNodeRef node_ref;
 
+    c_style_manager &set_flex_wrap(e_wrap value);
+    c_style_manager &set_flex_basis(float value) ;
+    c_style_manager &set_flex_grow(float value);
+    c_style_manager &set_flex_shrink(float value);
     c_style_manager &height_percent(int value);
 
     c_style_manager &clickthrough();
+
+    c_style_manager &overflow_hidden();
 
     c_style_manager &height_auto();
     c_style_manager &width_auto();

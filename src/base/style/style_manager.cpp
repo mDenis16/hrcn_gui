@@ -11,9 +11,40 @@ c_style_manager &c_style_manager::clickthrough()
     _clickthrough = true;
     return *this;
 }
+
+
+c_style_manager &c_style_manager::set_flex_grow(float value) {
+    YGNodeStyleSetFlexGrow(node_ref, value);
+    node->mark_layout_as_dirty();
+    return *this;
+}
+
+c_style_manager &c_style_manager::set_flex_shrink(float value) {
+    YGNodeStyleSetFlexShrink(node_ref, value);
+    node->mark_layout_as_dirty();
+    return *this;
+}
+
+c_style_manager &c_style_manager::set_flex_basis(float value) {
+    YGNodeStyleSetFlexBasis(node_ref, value);
+    node->mark_layout_as_dirty();
+    return *this;
+}
+c_style_manager &c_style_manager::set_flex_wrap(e_wrap value) {
+    YGNodeStyleSetFlexWrap(node_ref, (YGWrap)value);
+    node->mark_layout_as_dirty();
+    return *this;
+}
+c_style_manager &c_style_manager::overflow_hidden() {
+    _overflow_hidden = true;
+    node->mark_layout_as_dirty();
+    return *this;
+}
+
 c_style_manager &c_style_manager::height_auto()
 {
     YGNodeStyleSetHeightAuto(node_ref);
+
     node->mark_layout_as_dirty();
     return *this;
 }

@@ -1,23 +1,24 @@
 #pragma once
 class c_node;
 class c_effect;
-
+#include <vector>
 class c_state
 {
 public:
     c_node *node;
-    c_effect* effect;
+    std::vector<c_effect*> _effects;
     c_state();
     ~c_state();
 
     bool _update = false;
 
-    void update()
+
+    inline void update()
     {
         _update = true;
     }
 
-    bool require_update()
+    virtual bool require_update()
     {
         return _update;
     }

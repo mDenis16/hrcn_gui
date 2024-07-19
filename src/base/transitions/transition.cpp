@@ -26,7 +26,7 @@ void c_transition::run()
 
         if (progress >= 1.f)
         {
-            std::cout << "finished executing it " << std::endl;
+           // std::cout << "finished executing it " << std::endl;
             progress = 1.f;
             executed = true;
             return;

@@ -21,7 +21,7 @@ c_transition_background_color::~c_transition_background_color()
 
 void c_transition_background_color::run()
 {
-    // std::cout << "c_transition_position " << std::endl;
+
     c_transition::run();
 
     auto &color = node->_style->_background_color;
@@ -33,8 +33,9 @@ void c_transition_background_color::run()
     if (new_color.b() != old_color.b())
         color.setB(std::lerp(old_color.b(), new_color.b(), progress));
     if (new_color.a() != old_color.a())
-        color.setB(std::lerp(old_color.a(), new_color.a(), progress));
+        color.setA(std::lerp(old_color.a(), new_color.a(), progress));
 
+    //std::cout << "c_transition_background_color " << " r "  << color.r() << " g " << color.g() << " b " << color.b() << " a " << color.a() <<  std::endl;
 
 
     node->dirty = true;

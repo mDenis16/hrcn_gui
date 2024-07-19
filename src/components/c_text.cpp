@@ -23,12 +23,16 @@ void c_text::render(BLContext &context)
     if (!font)
         return;
 
-    const char *str =
-        "Hello Blend2D!\n";
+    if (!_string.has_value())
+        return;
 
     int y = box.y;
 
-    gb.setUtf8Text((const char *)(&local_Str[0]));
+    auto& s = _string.value();
+
+    char raw[128];
+    s.access_string(raw);
+    gb.setUtf8Text((const char *)(&raw[0]));
     font.shape(gb);
     BLTextMetrics tm;
     BLFontMetrics fm = font.metrics();
@@ -54,7 +58,16 @@ YGSize c_text::measure(YGNodeConstRef node,
     auto &gb = item->gb;
     auto &font = item->font;
 
-    gb.setUtf8Text((const char *)(&item->local_Str[0]));
+    if (!item->_string.has_value()) {
+        std::cout << "Warrning c_text without string!! " << std::endl;
+        return {0,0};
+    }
+    auto& s = item->_string.value();
+
+    char raw[128];
+    s.access_string(raw);
+    gb.setUtf8Text((const char *)(&raw[0]));
+
     font.shape(gb);
     BLTextMetrics tm;
     BLFontMetrics fm = font.metrics();

@@ -61,3 +61,10 @@ enum class e_position : uint8_t
   position_type_absolute = YGPositionTypeAbsolute,
 
 };
+
+
+enum class e_wrap : uint8_t {
+  no_wrap = YGWrapNoWrap,
+  wrap = YGWrapWrap,
+  wrap_reverse = YGWrapWrapReverse,
+};

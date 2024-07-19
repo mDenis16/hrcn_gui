@@ -6,7 +6,7 @@ message("HRCN GUI")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_EXTENSIONS ON)
 
 set(source_dir "${CMAKE_CURRENT_LIST_DIR}")
 set(BLEND2D_STATIC TRUE)
@@ -51,7 +51,7 @@ find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS} ${APP_DIR}/libs/imgui  ${APP_DIR}/libs/glad  ${BLEND2D_DIR} ${BLEND2D_DIR}/src)
 
 
-
+set(CMAKE_CXX_STANDARD 20)
 
 add_executable(gui-demo 
 
@@ -64,13 +64,14 @@ ${APP_DIR}/libs/imgui/backends/imgui_impl_opengl3.cpp
 
 ${DEMO_APP_DIR}/gui.cpp
 
-${DEMO_APP_DIR}/components/combobox.cpp
-${DEMO_APP_DIR}/components/checkbox.cpp
-${DEMO_APP_DIR}/components/slider.cpp
     ${DEMO_APP_DIR}/arm_opengl.cpp
+        demo/components/navbar.hpp
+        demo/components/navbutton.hpp
+        demo/components/component_wrapper.hpp
 
-    )
+)
 
+target_compile_features(gui-demo PUBLIC cxx_std_20)
 target_link_libraries(gui-demo glfw
 ${OPENGL_LIBRARIES}
 gui)

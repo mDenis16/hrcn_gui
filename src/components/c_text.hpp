@@ -26,29 +26,18 @@ public:
     BLGlyphRun gn;
     char8_t local_Str[128];
     size_t str_size;
-    template<secure_string str>
-    constexpr void set_text() {
-        //  memcpy(str, str.get(), str.size());
-        for(int i = 0; i < str.size(); i++)
-            local_Str[i ] = str.at(i);
 
-        local_Str[str.size()] = '\0';
+    std::optional<runtime_secure_string> _string = std::nullopt;
 
-        str_size = str.size();
+    void set_string(runtime_secure_string string) {
+        _string = string;
+        YGNodeMarkDirty(node_ref);
+        mark_layout_as_dirty();
     }
 
+    void set_raw_string(const char* string) {
 
-     void set_text(std::string str) {
-        //  memcpy(str, str.get(), str.size());
-        for(int i = 0; i < str.size(); i++)
-            local_Str[i ] = str.at(i);
-
-        local_Str[str.size()] = '\0';
-
-        str_size = str.size();
-
-         YGNodeMarkDirty(node_ref);
-
+        YGNodeMarkDirty(node_ref);
         mark_layout_as_dirty();
     }
 

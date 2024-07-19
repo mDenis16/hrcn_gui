@@ -7,10 +7,19 @@
 #include <base/node.hpp>
 #include <base/yg_enums.hpp>
 
+#include "transition_margin.hpp"
+
 c_transitions_manager::c_transitions_manager(c_node *_node) : node(_node)
 {
 }
+c_transitions_manager &c_transitions_manager::margin(e_edge edge, float value) {
+    auto transition = new c_transition_margin(node, edge, value, milliseconds);
+    _list.push_back(transition);
+    assert(node->app_context);
 
+    node->app_context->_transitions.push_back(transition);
+    return *this;
+}
 c_transitions_manager &c_transitions_manager::position(e_edge edge, float value)
 {
     std::cout << " c_transitions_manager::position " << std::endl;
