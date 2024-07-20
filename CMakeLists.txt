@@ -4,12 +4,21 @@ project(gui)
 
 message("HRCN GUI")
 
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
 set(source_dir "${CMAKE_CURRENT_LIST_DIR}")
 set(BLEND2D_STATIC TRUE)
+set(BLEND2D_NO_INTRINSICS TRUE)
+set(BLEND2D_NO_JIT TRUE)
+set(BLEND2D_NO_NATVIS TRUE)
+set(BLEND2D_NO_STDCXX TRUE)
+set(BLEND2D_NO_TLS TRUE)
+set(BLEND2D_NO_JIT_LOGGING TRUE)
+
+add_compile_options(-fno-rtti)
 
 # Where the 'app' and 'blend2d' are.
 set(APP_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "Application directory")
@@ -37,12 +46,10 @@ file(GLOB_RECURSE  SOURCES CONFIGURE_DEPENDS
 
 
 
-add_library(gui STATIC  ${SOURCES}
-        src/base/allocator.cpp
-        src/base/allocator.h)
+add_library(gui STATIC  ${SOURCES})
 
 target_link_libraries(gui glfw blend2d yogacore )
-
+target_compile_options(gui PRIVATE /GR-)
 # glfw
 
 include_directories(${GLFW_INCLUDE_DIRS})
@@ -51,9 +58,6 @@ link_libraries(${GLFW_LIBRARY_DIRS})
 # opengl
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS} ${APP_DIR}/libs/imgui  ${APP_DIR}/libs/glad  ${BLEND2D_DIR} ${BLEND2D_DIR}/src)
-
-
-set(CMAKE_CXX_STANDARD 20)
 
 add_executable(gui-demo 
 

@@ -14,7 +14,7 @@ class c_transitions_manager;
 class c_event_listener;
 class c_effect;
 class c_state;
-class c_app_context;
+#include "app_context.hpp"
 
 enum class e_node_event_type : uint8_t;
 
@@ -75,7 +75,7 @@ public:
     c_event_listener *add_event_listener(e_node_event_type type, std::function<void(c_node_event *)> _fn);
     void remove_event_listener(c_event_listener *_event_listener);
 
-    inline static std::vector<c_node *> nodes;
+    
 
     virtual void layout_update(BLPointI point);
 
@@ -143,7 +143,7 @@ public:
     {
         constexpr std::uint32_t hash = string_to_fnv1_hash<str>();
 
-        for (auto &node : nodes)
+        for (auto &node : c_app_context::get_current()->_nodes)
             if (node->identifier == hash)
                 return node;
 

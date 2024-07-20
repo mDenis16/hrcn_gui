@@ -5,7 +5,7 @@
 
 class c_text : public c_node {
 public:
-    BLFont font ;
+    c_font* _font;
 
     c_text();
 
@@ -13,7 +13,7 @@ public:
 
     void render(BLContext &context) override;
 
-    inline void set_font(BLFont font) { this->font = font; }
+    inline void set_font(c_font* font) { this->_font = font; }
 
     
 
@@ -22,8 +22,7 @@ public:
     BLRgba32 color;
 
     YGNodeRef base;
-    BLGlyphBuffer gb;
-    BLGlyphRun gn;
+  
     char8_t local_Str[128];
     size_t str_size;
 

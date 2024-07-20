@@ -12,6 +12,9 @@
 c_transitions_manager::c_transitions_manager(c_node *_node) : node(_node)
 {
 }
+c_transitions_manager::~c_transitions_manager(){
+    _list.clear();
+}
 c_transitions_manager &c_transitions_manager::margin(e_edge edge, float value) {
     auto transition = new c_transition_margin(node, edge, value, milliseconds);
     _list.push_back(transition);

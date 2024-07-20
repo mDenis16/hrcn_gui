@@ -16,6 +16,8 @@
 #include <base/state.hpp>
 #include <mutex>
 #include <base/yg_enums.hpp>
+#include <algorithm>
+#include <base/app_context.hpp>
 
 #include "events/mouse_scroll_event.hpp"
 
@@ -29,7 +31,7 @@ c_node::c_node(/* args */)
     _style = new c_style_manager(this, node_ref);
     _transitions = new c_transitions_manager(this);
 
-    nodes.push_back(this);
+    c_app_context::get_current()->add_node(this);
     global_index = muie++;
     //   YGNodeStyleSetPositionType(node_ref, YGPositionTypeRelative);
     YGNodeSetAlwaysFormsContainingBlock(node_ref, true /*alwaysFormsContainingBlock*/);
@@ -37,10 +39,12 @@ c_node::c_node(/* args */)
 
 void c_node::safe_destroy()
 {
+    ensure_children_app_context();
     this->parent->remove_child(this);
     this->destroy();
 }
-void c_node::clear() {
+void c_node::clear()
+{
 
     ensure_children_app_context();
 
@@ -76,21 +80,24 @@ void c_node::destroy()
         children[i]->destroy();
 
     // if (parent)
-    ///   parent->remove_child(this);
+    ///   parent->remove_child(his);
 
-    nodes.erase(std::remove_if(nodes.begin(), nodes.end(), [this](c_node *node)
-                               { return node == this; }));
+    c_app_context::get_current()->remove_node(this);
 
     YGNodeFree(node_ref);
 
     children.clear();
 
-    // app_context->remove_transitions_for_node(this);
+    app_context->remove_transitions_for_node(this);
 
-    std::cout << "nodes.size() " << nodes.size() << std::endl;
+    std::cout << "nodes.size() " << c_app_context::get_current()->_nodes.size() << std::endl;
+
+    delete this;
 }
 c_node::~c_node()
 {
+    delete _transitions;
+    delete _style;
 }
 
 void c_node::use_state(c_state *state)
@@ -102,9 +109,8 @@ void c_node::use_effect(std::function<void()> _callback, std::vector<c_state *> 
 
     auto effect = new c_effect(this, _callback, _states);
 
-    for(auto& state: _states)
+    for (auto &state : _states)
         state->_effects.push_back(effect);
-
 }
 void c_node::check_for_state_changes()
 {
@@ -128,26 +134,25 @@ void c_node::remove_event_listener(c_event_listener *_event_listener)
 
 void c_node::render(BLContext &context)
 {
-    if (parent && _style->_overflow_hidden) {
+    if (parent && _style->_overflow_hidden)
+    {
         auto parent_box = parent->box;
         if ((box.y > parent_box.y + parent_box.h) || box.y + box.h < parent_box.y)
             return;
     }
     bool restore_clipping = false;
 
-
     context.setFillStyle(_style->_background_color);
     context.fillRect(BLRectI((int)box.x, (int)box.y, (int)box.w, (int)box.h));
 
-
     if (overflow_y && _style->_overflow_hidden)
-    context.clipToRect(box);
+        context.clipToRect(box);
 
     for (auto &child : children)
         if (child->node_ref && YGNodeStyleGetPositionType(child->node_ref) == (YGPositionType)e_position::position_type_relative || child->_style->_z_index <= 0)
             child->render(context);
-    if (overflow_y  && _style->_overflow_hidden)
-    context.restoreClipping();
+    if (overflow_y && _style->_overflow_hidden)
+        context.restoreClipping();
 
     context.setFillStyle(_style->_border_color);
     context.fillRect(BLRectI(box.x, box.y, box.w, 1));
@@ -160,9 +165,6 @@ void c_node::render(BLContext &context)
     // context.strokeRect(BLRectI((int)box.x, (int)box.y, (int)box.w, (int)box.h));
 
     // context.strokeRect(static_box);
-
-
-
 
     dirty = false;
 }
@@ -190,7 +192,8 @@ bool c_node::absolute_anchestor(int &z_index)
 
 void c_node::layout_update(BLPointI point)
 {
-    if (!node_ref) return;
+    if (!node_ref)
+        return;
 
     box.x = point.x + YGNodeLayoutGetLeft(node_ref);
     box.y = point.y + YGNodeLayoutGetTop(node_ref);
@@ -221,30 +224,30 @@ void c_node::layout_update(BLPointI point)
     max_scroll = (box.h) / (content_box.h);
     dirty_layout = false;
 
-        if (!this->scroll_listener)
-           this-> scroll_listener = this->add_event_listener(e_node_event_type::mouse_scroll_event,[this](c_node_event* event) {
+    if (!this->scroll_listener)
+        this->scroll_listener = this->add_event_listener(e_node_event_type::mouse_scroll_event, [this](c_node_event *event)
+                                                         {
+                                                             if (!overflow_y)
+                                                                 return;
+                                                             event->stop_propagation();
+                                                             std::cout << " on scroll " << std::endl;
+                                                             auto scroll_event = event->as<c_mouse_scroll_event>();
+                                                             auto offset = abs(scroll_event->offset.y);
 
-            if (!overflow_y) return;
-               event->stop_propagation();
-               std::cout << " on scroll " << std::endl;
-            auto scroll_event = event->as<c_mouse_scroll_event>();
-               auto offset = abs(scroll_event->offset.y);
+                                                             if (scroll_event->offset.y < 0)
+                                                                 scroll += 0.003f * offset;
+                                                             else if (scroll_event->offset.y > 0)
+                                                                 scroll -= 0.003f * offset;
 
-          if (scroll_event->offset.y < 0)
-              scroll += 0.003f * offset;
-          else if (scroll_event->offset.y > 0)
-              scroll -= 0.003f * offset;
+                                                             std::cout << "max_scroll " << max_scroll << std::endl;
+                                                             scroll = std::clamp(scroll, 0.f, 1.f - max_scroll);
 
+                                                             std::cout << " scroll " << scroll << std::endl;
+                                                             mark_layout_as_dirty();
+                                                         });
 
-          std::cout << "max_scroll " << max_scroll << std::endl;
-          scroll = std::clamp(scroll, 0.f, 1.f - max_scroll);
-
-          std::cout << " scroll " << scroll << std::endl;
-            mark_layout_as_dirty();
-
-             });
-
-    if (!_init && _on_init) {
+    if (!_init && _on_init)
+    {
         _on_init();
         _init = true;
     }
@@ -434,7 +437,7 @@ bool c_node::require_rerender(bool &_dirty_layout)
     auto d = this;
     bool drty = false;
 
-    for (c_node *node : nodes)
+    for (c_node *node : c_app_context::get_current()->_nodes)
     {
 
         if (node->parent == nullptr || node->is_root)

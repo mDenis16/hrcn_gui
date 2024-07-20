@@ -23,6 +23,14 @@ c_app_context::~c_app_context()
 void c_app_context::execute()
 {
 
+    for (size_t i = 0; i < c_app_context::get_current()->_nodes.size(); i++)
+    {
+        auto node = c_app_context::get_current()->_nodes.at(i);
+        if (node == nullptr)
+            continue;
+        node->check_for_state_changes();
+    }
+
     for (auto &transition : _transitions)
     {
         if (transition->executed || transition->node == nullptr)
@@ -72,11 +80,11 @@ void c_app_context::process_mouse_move(c_mouse_move_event *event)
                 if (cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h)
                 {
                     bool overflow = false;
-                    if (listener->node->parent) {
+                    if (listener->node->parent)
+                    {
                         auto parent_box = listener->node->parent->box;
 
-                        overflow = !( box.y > parent_box.y && box.y + box.h < (parent_box.y + parent_box.h));
-
+                        overflow = !(box.y > parent_box.y && box.y + box.h < (parent_box.y + parent_box.h));
                     }
 
                     if (listener->type == e_node_event_type::mouse_enter_event && !listener->node->hovering)
@@ -121,18 +129,16 @@ void c_app_context::process_event(c_node_event *event)
     else
     {
         std::vector<c_event_listener *> absolute_listenrs;
-       
-       
+
         for (auto &listener : _event_listeners)
         {
             if (listener->absolute)
                 absolute_listenrs.push_back(listener);
         }
-         std::sort(absolute_listenrs.begin(), absolute_listenrs.end(), [](const c_event_listener* a, const c_event_listener* b)
-              { return a->z_index > b->z_index; });
-              
-        process_event_for_listeners(event, absolute_listenrs, true);
+        std::sort(absolute_listenrs.begin(), absolute_listenrs.end(), [](const c_event_listener *a, const c_event_listener *b)
+                  { return a->z_index > b->z_index; });
 
+        process_event_for_listeners(event, absolute_listenrs, true);
 
         if (event->_stop_propagation)
             return;
@@ -161,11 +167,11 @@ void c_app_context::process_event_for_listeners(c_node_event *event, std::vector
             auto &cursor = event->position;
 
             bool overflow = false;
-            if (listener->node->parent) {
+            if (listener->node->parent)
+            {
                 auto parent_box = listener->node->parent->box;
 
-                overflow =(box.y > parent_box.y + parent_box.h) || box.y + box.h < parent_box.y;
-
+                overflow = (box.y > parent_box.y + parent_box.h) || box.y + box.h < parent_box.y;
             }
 
             if (!overflow && (cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h))
@@ -182,7 +188,7 @@ void c_app_context::process_event_for_listeners(c_node_event *event, std::vector
 
 void c_app_context::add_event_listener(c_node *node, c_event_listener *listener)
 {
-   // std::cout << "add_event_listener " << listener << std::endl;
+    // std::cout << "add_event_listener " << listener << std::endl;
     _event_listeners.push_back(listener);
 }
 

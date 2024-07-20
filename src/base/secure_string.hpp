@@ -101,20 +101,34 @@ inline constexpr std::size_t strlen_c(const char* str) {
     }
     return length;
 }
-
-constexpr std::array<uint64_t, 16> stringToUint64Array(const char* str) {
+struct StringData {
+    size_t key;
+    std::array<uint64_t, 16> data;
+};
+constexpr StringData stringToUint64Array(const char* str) {
     std::size_t length = strlen_c(str);
-    std::array<uint64_t, 16> result = {0}; // 16 * 8 = 128 characters maximum
+    StringData result = {0, 0}; // 16 * 8 = 128 characters maximum
+
+    size_t key = hash_fnv1a(str);
+
     for (std::size_t i = 0; i < length; ++i) {
-        result[i / 8] |= (static_cast<uint64_t>(str[i]) << (8 * (i % 8)));
+        result.data[i / 8] |= (static_cast<uint64_t>(str[i]) << (8 * (i % 8)));
     }
+    for (std::size_t i = 0; i < 16; ++i) 
+        result.data[i] = result.data[i] ^  key;
+    
+    result.key = key;
     return result;
 }
 
- inline void uint64ArrayToString(const std::array<uint64_t, 16>& arr, char* output) {
+ inline void uint64ArrayToString(size_t key, const std::array<uint64_t, 16>& arr, char* output) {
+    std::array<uint64_t, 16> decryptedArr = arr;
+    for (std::size_t i = 0; i < 16; ++i) {
+        decryptedArr[i] = decryptedArr[i]^ key;
+    }
     for (std::size_t i = 0; i < 16; ++i) {
         for (std::size_t j = 0; j < 8; ++j) {
-            char c = (arr[i] >> (8 * j)) & 0xFF;
+            char c = (decryptedArr[i] >> (8 * j)) & 0xFF;
             if (c != '\0') {
                 *output++ = c;
             } else {
@@ -128,18 +142,18 @@ constexpr std::array<uint64_t, 16> stringToUint64Array(const char* str) {
 class runtime_secure_string {
 public:
 
-    std::array<uint64_t, 16> _data;
-    runtime_secure_string(std::function<std::array<uint64_t, 16>()> _callback) {
+    StringData _data;
+    runtime_secure_string(std::function<StringData()> _callback) {
 
       //  memcpy(&str_data[0], &data.buff[0], 128);
         _data = _callback();
     }
-    runtime_secure_string( std::array<uint64_t, 16> data) {
+    runtime_secure_string( StringData data) {
         _data = data;
     }
 
     inline void access_string(char* output) {
-        uint64ArrayToString(_data, output);
+        uint64ArrayToString(_data.key, _data.data, output);
     }
 
 };

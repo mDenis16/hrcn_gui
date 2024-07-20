@@ -22,7 +22,7 @@ public:
     c_event_listener(e_node_event_type _type, c_node *_node, std::function<void(c_node_event *event)> _callback);
     ~c_event_listener();
     
-    inline static std::vector<c_event_listener*> _listeners;
-    inline static std::mutex _mtx;
+
+    
 
 };
