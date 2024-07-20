@@ -7,7 +7,7 @@
 #include <base/yg_enums.hpp>
 
 /// c_transition_border_color(c_node* _node,  BLRgba32 _new_color, int _milliseconds)
-c_transition_border_color::c_transition_border_color(c_node *_node, BLRgba32 _new_color, int _milliseconds) : c_transition(_node, _milliseconds)
+c_transition_border_color::c_transition_border_color(c_node *_node, c_color _new_color, int _milliseconds) : c_transition(_node, _milliseconds)
 {
     type = e_transition_type::border_color;
 
@@ -26,14 +26,14 @@ void c_transition_border_color::run()
 
     auto &color = node->_style->_border_color;
 
-    if (new_color.r() != old_color.r())
-        color.setR(std::lerp(old_color.r(), new_color.r(), progress));
-    if (new_color.g() != old_color.g())
-        color.setG(std::lerp(old_color.g(), new_color.g(), progress));
-    if (new_color.b() != old_color.b())
-        color.setB(std::lerp(old_color.b(), new_color.b(), progress));
-    if (new_color.a() != old_color.a())
-        color.setB(std::lerp(old_color.a(), new_color.a(), progress));
+    if (new_color.getR() != old_color.getR())
+        color.setR(std::lerp(old_color.getR(), new_color.getR(), progress));
+    if (new_color.getG() != old_color.getG())
+        color.setG(std::lerp(old_color.getG(), new_color.getG(), progress));
+    if (new_color.getB() != old_color.getB())
+        color.setB(std::lerp(old_color.getB(), new_color.getB(), progress));
+    if (new_color.getA() != old_color.getA())
+        color.setA(std::lerp(old_color.getA(), new_color.getA(), progress));
 
 
 

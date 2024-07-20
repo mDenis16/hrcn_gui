@@ -21,20 +21,19 @@
 
 #include "events/mouse_scroll_event.hpp"
 
-static int muie = 0;
+
 c_node::c_node(/* args */)
 {
-    node_ref = YGNodeNew();
-    bg_color = BLRgba32(0, 255, 0, 100);
-    border_color = BLRgba32(255, 255, 0, 0);
+    node_ref = (c_node_ref*)YGNodeNew();
 
-    _style = new c_style_manager(this, node_ref);
+
+    _style = new c_style_manager(this);
     _transitions = new c_transitions_manager(this);
 
     c_app_context::get_current()->add_node(this);
-    global_index = muie++;
+    
     //   YGNodeStyleSetPositionType(node_ref, YGPositionTypeRelative);
-    YGNodeSetAlwaysFormsContainingBlock(node_ref, true /*alwaysFormsContainingBlock*/);
+    YGNodeSetAlwaysFormsContainingBlock((YGNodeRef)node_ref, true /*alwaysFormsContainingBlock*/);
 };
 
 void c_node::safe_destroy()
@@ -84,7 +83,7 @@ void c_node::destroy()
 
     c_app_context::get_current()->remove_node(this);
 
-    YGNodeFree(node_ref);
+    YGNodeFree((YGNodeRef)node_ref);
 
     children.clear();
 
@@ -142,19 +141,19 @@ void c_node::render(BLContext &context)
     }
     bool restore_clipping = false;
 
-    context.setFillStyle(_style->_background_color);
+    context.setFillStyle(BLRgba32(_style->_background_color.getR(),_style->_background_color.getG(),_style->_background_color.getB(),_style->_background_color.getA()));
     context.fillRect(BLRectI((int)box.x, (int)box.y, (int)box.w, (int)box.h));
 
     if (overflow_y && _style->_overflow_hidden)
         context.clipToRect(box);
 
     for (auto &child : children)
-        if (child->node_ref && YGNodeStyleGetPositionType(child->node_ref) == (YGPositionType)e_position::position_type_relative || child->_style->_z_index <= 0)
+        if (child->node_ref && YGNodeStyleGetPositionType((YGNodeRef)child->node_ref) == (YGPositionType)e_position::position_type_relative || child->_style->_z_index <= 0)
             child->render(context);
     if (overflow_y && _style->_overflow_hidden)
         context.restoreClipping();
 
-    context.setFillStyle(_style->_border_color);
+    context.setFillStyle(BLRgba32(_style->_border_color.getR(),_style->_border_color.getG(),_style->_border_color.getB(),_style->_border_color.getA()));
     context.fillRect(BLRectI(box.x, box.y, box.w, 1));
     context.fillRect(BLRectI(box.x, box.y, 1, box.h));
 
@@ -195,10 +194,10 @@ void c_node::layout_update(BLPointI point)
     if (!node_ref)
         return;
 
-    box.x = point.x + YGNodeLayoutGetLeft(node_ref);
-    box.y = point.y + YGNodeLayoutGetTop(node_ref);
-    box.w = YGNodeLayoutGetWidth(node_ref);
-    box.h = YGNodeLayoutGetHeight(node_ref);
+    box.x = point.x + YGNodeLayoutGetLeft((YGNodeRef)node_ref);
+    box.y = point.y + YGNodeLayoutGetTop((YGNodeRef)node_ref);
+    box.w = YGNodeLayoutGetWidth((YGNodeRef)node_ref);
+    box.h = YGNodeLayoutGetHeight((YGNodeRef)node_ref);
 
     static_box = box;
 
@@ -304,7 +303,7 @@ BLSize c_node::content_size()
 
 void c_node::add_child(c_node *node)
 {
-    YGNodeInsertChild(node_ref, node->node_ref, children.size());
+    YGNodeInsertChild((YGNodeRef)node_ref, (YGNodeRef)node->node_ref, children.size());
     node->parent = this;
     node->child_index = children.size();
     children.push_back(node);
@@ -460,9 +459,9 @@ BLRect c_node::calc_total_size()
         return BLRect{};
     BLRect original = box;
 
-    original.w += YGNodeLayoutGetMargin(node_ref, YGEdgeLeft) + YGNodeLayoutGetMargin(node_ref, YGEdgeRight);
-    original.h += YGNodeLayoutGetMargin(node_ref, YGEdgeTop) + YGNodeLayoutGetMargin(node_ref, YGEdgeBottom) +
-                  YGNodeLayoutGetPadding(node_ref, YGEdgeTop) + YGNodeLayoutGetPadding(node_ref, YGEdgeBottom);
+    original.w += YGNodeLayoutGetMargin((YGNodeRef)node_ref, YGEdgeLeft) + YGNodeLayoutGetMargin((YGNodeRef)node_ref, YGEdgeRight);
+    original.h += YGNodeLayoutGetMargin((YGNodeRef)node_ref, YGEdgeTop) + YGNodeLayoutGetMargin((YGNodeRef)node_ref, YGEdgeBottom) +
+                  YGNodeLayoutGetPadding((YGNodeRef)node_ref, YGEdgeTop) + YGNodeLayoutGetPadding((YGNodeRef)node_ref, YGEdgeBottom);
 
     return original;
 }

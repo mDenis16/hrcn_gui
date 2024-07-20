@@ -18,6 +18,8 @@ class c_state;
 
 enum class e_node_event_type : uint8_t;
 
+class c_node_ref;
+
 class c_node
 {
 private:
@@ -59,6 +61,10 @@ public:
 
     c_node *parent = nullptr;
 
+
+    void* getRef() {
+        return node_ref;
+    }
 
     bool dirty_layout = true;
     bool dirty = true;
@@ -171,9 +177,9 @@ public:
 
 
     bool absolute = false;
-    BLRgba32 border_color;
 
-    YGNodeRef node_ref;
+
+    c_node_ref* node_ref;
 
     std::function<void(c_node *item)> _click;
 

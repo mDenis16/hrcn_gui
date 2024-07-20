@@ -1,8 +1,7 @@
 #pragma once
 #include <vector>
 #include <cstdint>
-
-#include <blend2d.h>
+#include <base/style/color.hpp>
 class c_node;
 class c_transition;
 enum class e_edge : uint8_t;
@@ -18,8 +17,8 @@ public:
 
     c_transitions_manager &margin(e_edge edge, float value);
     c_transitions_manager &position(e_edge edge, float value);
-    c_transitions_manager &background_color(BLRgba32 color);
-    c_transitions_manager &border_color(BLRgba32 color);
+    c_transitions_manager &background_color(c_color color);
+    c_transitions_manager &border_color(c_color color);
 
     std::vector<c_transition *> _list;
     

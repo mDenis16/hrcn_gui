@@ -1,6 +1,10 @@
 #pragma once
 #include <Yoga/Yoga.h>
 #include <blend2d.h>
+
+#include <base/style/color.hpp>
+
+
 /*
 YOGA ABSTRACTION
 */
@@ -19,9 +23,9 @@ class c_node;
 class c_style_manager
 {
 private:
-    BLRgba32 _background_color;
-    BLRgba32 _border_color;
-    BLRgba32 _color;
+    c_color _background_color;
+    c_color _border_color;
+    c_color _color;
 
     bool _overflow_hidden = false;
 
@@ -43,12 +47,12 @@ public:
     c_style_manager()
     {
     }
-    c_style_manager(c_node *_node, YGNodeRef _ref)
+    c_style_manager(c_node *_node)
     {
         node = _node;
-        node_ref = _ref;
+
     }
-    YGNodeRef node_ref;
+    
 
     c_style_manager &set_flex_wrap(e_wrap value);
     c_style_manager &set_flex_basis(float value) ;
@@ -63,7 +67,7 @@ public:
     c_style_manager &height_auto();
     c_style_manager &width_auto();
     c_style_manager &height(float value);
-    c_style_manager &color(BLRgba32 color);
+    c_style_manager &color(c_color color);
     c_style_manager &z_index(int value);
     c_style_manager &width(float value);
 
@@ -73,8 +77,8 @@ public:
     c_style_manager &width_percent(float value);
 
     c_style_manager &display(e_display display);
-    c_style_manager &background_color(BLRgba32 color);
-    c_style_manager &border_color(BLRgba32 color);
+    c_style_manager &background_color(c_color color);
+    c_style_manager &border_color(c_color color);
     c_style_manager &border_stroke(float value);
     c_style_manager &padding(e_edge edge, float value);
 

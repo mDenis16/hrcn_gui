@@ -1,23 +1,20 @@
 #pragma once
 #include "transition.hpp"
-#include <blend2d.h>
+#include <base/style/color.hpp>
+
 enum class e_edge : uint8_t;
 class c_node;
 
-class c_transition_border_color : public c_transition {
+class c_transition_border_color : public c_transition
+{
 public:
-
     e_edge _edge;
-  
-    BLRgba32 old_color;
-    BLRgba32 new_color;
 
-    c_transition_border_color(c_node* _node,  BLRgba32 _new_color, int _milliseconds);
+    c_color old_color;
+    c_color new_color;
+
+    c_transition_border_color(c_node *_node, c_color _new_color, int _milliseconds);
     ~c_transition_border_color();
-
 
     void run() override;
 };
-
-
-

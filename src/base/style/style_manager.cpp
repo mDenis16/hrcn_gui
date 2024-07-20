@@ -14,24 +14,24 @@ c_style_manager &c_style_manager::clickthrough()
 
 
 c_style_manager &c_style_manager::set_flex_grow(float value) {
-    YGNodeStyleSetFlexGrow(node_ref, value);
+    YGNodeStyleSetFlexGrow((YGNodeRef)node->getRef(), value);
     node->mark_layout_as_dirty();
     return *this;
 }
 
 c_style_manager &c_style_manager::set_flex_shrink(float value) {
-    YGNodeStyleSetFlexShrink(node_ref, value);
+    YGNodeStyleSetFlexShrink((YGNodeRef)node->getRef(), value);
     node->mark_layout_as_dirty();
     return *this;
 }
 
 c_style_manager &c_style_manager::set_flex_basis(float value) {
-    YGNodeStyleSetFlexBasis(node_ref, value);
+    YGNodeStyleSetFlexBasis((YGNodeRef)node->getRef(), value);
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::set_flex_wrap(e_wrap value) {
-    YGNodeStyleSetFlexWrap(node_ref, (YGWrap)value);
+    YGNodeStyleSetFlexWrap((YGNodeRef)node->getRef(), (YGWrap)value);
     node->mark_layout_as_dirty();
     return *this;
 }
@@ -43,30 +43,30 @@ c_style_manager &c_style_manager::overflow_hidden() {
 
 c_style_manager &c_style_manager::height_auto()
 {
-    YGNodeStyleSetHeightAuto(node_ref);
+    YGNodeStyleSetHeightAuto((YGNodeRef)node->getRef());
 
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::width_auto()
 {
-    YGNodeStyleSetWidthAuto(node_ref);
+    YGNodeStyleSetWidthAuto((YGNodeRef)node->getRef());
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::height(float value)
 {
-    YGNodeStyleSetHeight(node_ref, value);
+    YGNodeStyleSetHeight((YGNodeRef)node->getRef(), value);
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::height_percent(int value)
 {
-    YGNodeStyleSetHeightPercent(node_ref, value);
+    YGNodeStyleSetHeightPercent((YGNodeRef)node->getRef(), value);
     node->mark_layout_as_dirty();
     return *this;
 }
-c_style_manager &c_style_manager::color(BLRgba32 color)
+c_style_manager &c_style_manager::color(c_color color)
 {
     _color = color;
     node->mark_as_dirty();
@@ -81,55 +81,55 @@ c_style_manager &c_style_manager::z_index(int value)
 
 c_style_manager &c_style_manager::width(float value)
 {
-    YGNodeStyleSetWidth(node_ref, value);
+    YGNodeStyleSetWidth((YGNodeRef)node->getRef(), value);
     node->mark_layout_as_dirty();
     return *this;
 }
 
 c_style_manager &c_style_manager::padding(e_edge edge, float value)
 {
-    YGNodeStyleSetPadding(node_ref, (YGEdge)edge, value);
+    YGNodeStyleSetPadding((YGNodeRef)node->getRef(), (YGEdge)edge, value);
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::margin(e_edge edge, float value)
 {
-    YGNodeStyleSetMargin(node_ref, (YGEdge)edge, value);
+    YGNodeStyleSetMargin((YGNodeRef)node->getRef(), (YGEdge)edge, value);
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::margin_percent(e_edge edge, float value)
 {
-    YGNodeStyleSetMarginPercent(node_ref, (YGEdge)edge, value);
+    YGNodeStyleSetMarginPercent((YGNodeRef)node->getRef(), (YGEdge)edge, value);
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::margin_auto(e_edge edge)
 {
-    YGNodeStyleSetMarginAuto(node_ref, (YGEdge)edge);
+    YGNodeStyleSetMarginAuto((YGNodeRef)node->getRef(), (YGEdge)edge);
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::width_percent(float value)
 {
-    YGNodeStyleSetWidthPercent(node_ref, value);
+    YGNodeStyleSetWidthPercent((YGNodeRef)node->getRef(), value);
     node->mark_layout_as_dirty();
     return *this;
 }
 
 c_style_manager &c_style_manager::display(e_display display)
 {
-    YGNodeStyleSetDisplay(node_ref, (YGDisplay)display);
+    YGNodeStyleSetDisplay((YGNodeRef)node->getRef(), (YGDisplay)display);
     node->mark_layout_as_dirty();
     return *this;
 }
-c_style_manager &c_style_manager::background_color(BLRgba32 color)
+c_style_manager &c_style_manager::background_color(c_color color)
 {
     _background_color = color;
     node->mark_layout_as_dirty();
     return *this;
 }
-c_style_manager &c_style_manager::border_color(BLRgba32 color)
+c_style_manager &c_style_manager::border_color(c_color color)
 {
     node->mark_layout_as_dirty();
     _border_color = color;
@@ -144,25 +144,25 @@ c_style_manager &c_style_manager::border_stroke(float value)
 
 c_style_manager &c_style_manager::gap(e_gutter gutter, float value)
 {
-    YGNodeStyleSetGap(node_ref, (YGGutter)gutter, value);
+    YGNodeStyleSetGap((YGNodeRef)node->getRef(), (YGGutter)gutter, value);
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::flex_direction(e_flex_direction direction)
 {
-    YGNodeStyleSetFlexDirection(node_ref, (YGFlexDirection)direction);
+    YGNodeStyleSetFlexDirection((YGNodeRef)node->getRef(), (YGFlexDirection)direction);
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::justify_content(e_justify value)
 {
-    YGNodeStyleSetJustifyContent(node_ref, (YGJustify)value);
+    YGNodeStyleSetJustifyContent((YGNodeRef)node->getRef(), (YGJustify)value);
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::align_items(e_align value)
 {
-    YGNodeStyleSetAlignItems(node_ref, (YGAlign)value);
+    YGNodeStyleSetAlignItems((YGNodeRef)node->getRef(), (YGAlign)value);
     node->mark_layout_as_dirty();
     return *this;
 }
@@ -170,13 +170,13 @@ c_style_manager &c_style_manager::position_type(e_position position)
 {
     if (position == e_position::position_type_absolute) 
         node->absolute = true;
-    YGNodeStyleSetPositionType(node_ref, (YGPositionType)position);
+    YGNodeStyleSetPositionType((YGNodeRef)node->getRef(), (YGPositionType)position);
     node->mark_layout_as_dirty();
     return *this;
 }
 c_style_manager &c_style_manager::position(e_edge edge, float value)
 {
-    YGNodeStyleSetPosition(node_ref, (YGEdge)edge, value);
+    YGNodeStyleSetPosition((YGNodeRef)node->getRef(), (YGEdge)edge, value);
     node->mark_layout_as_dirty();
     return *this;
 }
