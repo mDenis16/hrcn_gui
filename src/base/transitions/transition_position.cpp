@@ -9,7 +9,7 @@ c_transition_position::c_transition_position(c_node *node, e_edge edge, float ne
     type = e_transition_type::position;
 
     this->new_value = new_value;
-    auto old = YGNodeStyleGetPosition(node->node_ref, (YGEdge)edge);
+    auto old = YGNodeStyleGetPosition((YGNodeRef)node->getRef(), (YGEdge)edge);
 
     this->old_value = old.value > 0 ? old.value : 0;
 
@@ -23,6 +23,6 @@ void c_transition_position::run()
   //  std::cout << "c_transition_position << progress   " << progress << std::endl;
     auto value = std::lerp(old_value, new_value, 1.f - std::cos((progress * 3.14f) * 0.5f));
 
-    YGNodeStyleSetPosition(node->node_ref, (YGEdge)_edge, value);
+    YGNodeStyleSetPosition((YGNodeRef)node->getRef(), (YGEdge)_edge, value);
     node->mark_layout_as_dirty();
 }

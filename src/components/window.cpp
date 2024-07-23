@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <algorithm>
+#include <Windows.h>
 
 c_window::c_window(BLSizeI size)
 {
@@ -12,11 +13,12 @@ c_window::c_window(BLSizeI size)
     texture = BLImage(size.w, size.h, BL_FORMAT_PRGB32);
     image_buffer.resize(size.w * size.h * 4);
 
-    YGNodeStyleSetWidth(node_ref, size.w);
-    YGNodeStyleSetHeight(node_ref, size.h);
-    YGNodeStyleSetDisplay(node_ref, YGDisplayFlex);
-    YGNodeStyleSetFlexDirection(node_ref, YGFlexDirectionRow);
-    YGNodeSetAlwaysFormsContainingBlock(node_ref, true /*alwaysFormsContainingBlock*/);
+
+    // YGNodeStyleSetWidth((YGNodeRef)getRef(), size.w);
+    // YGNodeStyleSetHeight((YGNodeRef)getRef(), size.h);
+    // YGNodeStyleSetDisplay((YGNodeRef)getRef(), YGDisplayFlex);
+    // YGNodeStyleSetFlexDirection((YGNodeRef)getRef(), YGFlexDirectionRow);
+    // YGNodeSetAlwaysFormsContainingBlock((YGNodeRef)getRef(), true /*alwaysFormsContainingBlock*/);
 }
 
 c_window::~c_window()
@@ -45,9 +47,9 @@ void c_window::render(BLContext &context)
 
     if (_dirty_layout)
     {
-        YGNodeCalculateLayout(node_ref, 800.f, 600.f, YGDirectionLTR);
+        YGNodeCalculateLayout((YGNodeRef)getRef(), 800.f, 600.f, YGDirectionLTR);
         std::cout << "c_window::layout update " << std::endl;
-        BLPointI point = BLPointI(YGNodeLayoutGetLeft(node_ref), YGNodeLayoutGetTop(node_ref));
+        BLPointI point = BLPointI(YGNodeLayoutGetLeft((YGNodeRef)getRef()), YGNodeLayoutGetTop((YGNodeRef)getRef()));
 
         layout_update(point);
         dirty_layout = false;
@@ -60,7 +62,7 @@ void c_window::render(BLContext &context)
             std::cout << "found null noderef " << std::endl;
             continue;;
         }
-        if ( YGNodeStyleGetPositionType(node->node_ref) == YGPositionTypeAbsolute && node->_style->get_z_index()  > 0)
+        if ( YGNodeStyleGetPositionType((YGNodeRef)node->getRef()) == YGPositionTypeAbsolute && node->_style->get_z_index()  > 0)
             absolute_nodes.push_back(node);
     }
 
@@ -81,6 +83,9 @@ void c_window::render(BLContext &context)
 
     memcpy(image_buffer.data(), data.pixelData, image_buffer.size());
 
+    MessageBox(0, "WriteTofile", "merge", MB_OK);
+
+    texture.writeToFile("claudiu.png");
     dirty = false;
 
     _updated = true;

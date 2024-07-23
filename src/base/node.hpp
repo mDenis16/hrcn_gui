@@ -63,7 +63,7 @@ public:
 
 
     void* getRef() {
-        return node_ref;
+        return (void*)node_ref;
     }
 
     bool dirty_layout = true;
@@ -173,7 +173,7 @@ public:
     BLRectI box;
     BLRect static_box;
 
-    BLRgba32 bg_color;
+  
 
 
     bool absolute = false;
