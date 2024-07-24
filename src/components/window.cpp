@@ -82,10 +82,6 @@ void c_window::render(BLContext &context)
     texture.getData(&data);
 
     memcpy(image_buffer.data(), data.pixelData, image_buffer.size());
-
-    MessageBox(0, "WriteTofile", "merge", MB_OK);
-
-    texture.writeToFile("claudiu.png");
     dirty = false;
 
     _updated = true;
