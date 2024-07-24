@@ -1,5 +1,5 @@
 #include <base/app_context.hpp>
-#include <base/node.hpp>
+
 #include <base/transitions/transition.hpp>
 #include <base/event_listener.hpp>
 #include <base/events/mouse_move_event.hpp>
@@ -9,12 +9,15 @@
 #include <base/events/mouse_up_event.hpp>
 #include <base/events/types.hpp>
 #include <base/yg_enums.hpp>
-
+#include <base/style/style_manager.hpp>
+#include <base/node.hpp>
 #include <iostream>
 #include <algorithm>
 
 c_app_context::c_app_context()
 {
+    texture = BLImage(1920, 1080, BL_FORMAT_PRGB32);
+    image_buffer.resize(1920 * 1080 * 4);
 }
 c_app_context::~c_app_context()
 {
@@ -240,4 +243,64 @@ void c_app_context::for_each_node_if(std::function<bool(c_node *)> _if_callback,
     for (auto &node : _nodes)
         if (_if_callback(node))
             _callback(node);
+}
+
+std::vector<uint8_t> &c_app_context::get_image_buffer()
+{
+    return image_buffer;
+}
+
+bool c_app_context::render()
+{
+    
+
+    bool _dirty_layout = false;
+
+    if (!root->require_rerender(_dirty_layout))
+        return false;
+
+    std::cout << "c_window::render " << std::endl;
+
+    if (_dirty_layout)
+    {
+        YGNodeCalculateLayout((YGNodeRef)root->getRef(), 1920.f, 1080.f, YGDirectionLTR);
+        std::cout << "c_window::layout update " << std::endl;
+        BLPointI point = BLPointI(YGNodeLayoutGetLeft((YGNodeRef)root->getRef()), YGNodeLayoutGetTop((YGNodeRef)root->getRef()));
+
+        root->layout_update(point);
+        root->dirty_layout = false;
+    }
+    BLContext context(texture);
+    context.clearAll();
+
+   std::vector<c_node*> absolute_nodes;
+    for(auto& node :  c_app_context::get_current()->_nodes) {
+        if (node->node_ref == nullptr) {
+            std::cout << "found null noderef " << std::endl;
+            continue;;
+        }
+        if ( YGNodeStyleGetPositionType((YGNodeRef)node->getRef()) == YGPositionTypeAbsolute && node->_style->get_z_index()  > 0)
+            absolute_nodes.push_back(node);
+    }
+
+    root->render(context);
+
+    std::sort(absolute_nodes.begin(), absolute_nodes.end(), [](const c_node* a, const c_node* b)
+              { return a->_style->get_z_index() > b->_style->get_z_index(); });
+    for(auto& node : absolute_nodes)
+        node->render(context);
+
+    context.end();
+
+    BLImageData data;
+    texture.getData(&data);
+
+    memcpy(image_buffer.data(), data.pixelData, image_buffer.size());
+    root->dirty = false;
+
+    return true;
+}
+
+void c_app_context::set_node_root(c_node *node){
+    root = node;
 }

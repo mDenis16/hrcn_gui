@@ -5,8 +5,7 @@
 
 class c_input_context {
 public:
-    c_window* window;
-    c_input_context(c_window* _window);
+    c_input_context();
 
     BLPointI cursor;
 

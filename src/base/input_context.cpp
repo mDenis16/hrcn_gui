@@ -17,9 +17,9 @@
 #include <base/events/mouse_scroll_event.hpp>
 #include <base/events/types.hpp>
 
-c_input_context::c_input_context(c_window *_window)
+c_input_context::c_input_context()
 {
-    window = _window;
+  
 }
 c_input_context::~c_input_context()
 {

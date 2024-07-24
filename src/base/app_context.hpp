@@ -2,6 +2,7 @@
 #include <deque>
 #include <vector>
 #include <functional>
+#include <blend2d.h>
 
 #include <mutex>
 
@@ -47,6 +48,14 @@ public:
     void remove_event_listeners_for_node(c_node *node);
     void remove_transitions_for_node(c_node *node);
     std::recursive_mutex _context_mutext;
+    
+    BLImage texture;
+    std::vector<uint8_t> image_buffer;
+    std::vector<uint8_t>& get_image_buffer();
+    bool render();
+    void set_node_root(c_node *node);
+
+    c_node * root = nullptr;
 
     inline static c_app_context *_current_context = nullptr;
 

@@ -5,14 +5,12 @@
 
 #include <fstream>
 #include <algorithm>
-#include <Windows.h>
 
 c_window::c_window(BLSizeI size)
 {
     is_root = true;
-    texture = BLImage(size.w, size.h, BL_FORMAT_PRGB32);
-    image_buffer.resize(size.w * size.h * 4);
-
+    texture = BLImage(1920, 1080, BL_FORMAT_PRGB32);
+    image_buffer.resize(1920 * 1080 * 4);
 
     // YGNodeStyleSetWidth((YGNodeRef)getRef(), size.w);
     // YGNodeStyleSetHeight((YGNodeRef)getRef(), size.h);
@@ -47,7 +45,7 @@ void c_window::render(BLContext &context)
 
     if (_dirty_layout)
     {
-        YGNodeCalculateLayout((YGNodeRef)getRef(), 800.f, 600.f, YGDirectionLTR);
+        YGNodeCalculateLayout((YGNodeRef)getRef(), 1920.f, 1080.f, YGDirectionLTR);
         std::cout << "c_window::layout update " << std::endl;
         BLPointI point = BLPointI(YGNodeLayoutGetLeft((YGNodeRef)getRef()), YGNodeLayoutGetTop((YGNodeRef)getRef()));
 

@@ -20,7 +20,7 @@ public:
     void on_event(c_node_event *event) override;
 
 
-
+    void * parent_ref = nullptr;
 
 
 

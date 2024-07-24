@@ -54,7 +54,7 @@ file(GLOB_RECURSE  SOURCES CONFIGURE_DEPENDS
 add_library(gui STATIC  ${SOURCES})
 
 target_link_libraries(gui glfw blend2d yogacore )
-target_compile_options(gui PRIVATE /GR-)
+# target_compile_options(gui PRIVATE /GR-)
 # glfw
 
 include_directories(${GLFW_INCLUDE_DIRS})
