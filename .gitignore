@@ -13,5 +13,3 @@ cmake-build-release64/
 cmake-build-relwithdebinfo/
 .idea/
 build/
-
-demo/
