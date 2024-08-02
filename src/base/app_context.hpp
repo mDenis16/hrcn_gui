@@ -6,19 +6,26 @@
 
 #include <mutex>
 
+#include "node.hpp"
+#include "style/style_manager.hpp"
+#include <utils/fnvhash.hpp>
 class c_transition;
 class c_node_event;
 class c_event_listener;
 class c_mouse_move_event;
 class c_node;
 class c_font;
+class c_state;
 
 enum class e_position : uint8_t;
 
 class c_app_context
 {
 public:
-    c_app_context();
+    c_app_context(int width, int height);
+
+    int width = 0;
+    int height = 0;
     ~c_app_context();
 
     std::vector<c_transition *> _transitions;
@@ -30,6 +37,14 @@ public:
     std::vector<c_node *> _nodes;
 
     std::vector<c_font *> _fonts;
+
+    std::vector<c_state* > _states;
+
+    bool modified = false;
+
+    void ensure_state_exist(c_state* state);
+
+    void add_state(c_state* state);
 
     void execute();
 
@@ -48,7 +63,18 @@ public:
     void remove_event_listeners_for_node(c_node *node);
     void remove_transitions_for_node(c_node *node);
     std::recursive_mutex _context_mutext;
-    
+
+
+    bool dirty_context = false;
+
+    inline bool is_context_dirty() {
+        return dirty_context;
+    }
+
+    float delta_time = 0.f;
+    void mark_context_dirty() {
+        dirty_context = true;
+    }
     BLImage texture;
     std::vector<uint8_t> image_buffer;
     std::vector<uint8_t>& get_image_buffer();
@@ -57,17 +83,30 @@ public:
 
     c_node * root = nullptr;
 
+    template <str_to_hash str>
+    c_node* get_node_by_hash() {
+        constexpr std::uint32_t hash = string_to_fnv1_hash<str>();
+        return get_node_by_hash(hash);
+    }
+    c_node* get_node_by_hash(std::uint32_t hash);
+
+    c_node* last_rendered = nullptr;
     inline static c_app_context *_current_context = nullptr;
 
-    void add_node(c_node *node)
-    {
-        _nodes.push_back(node);
-    }
+    void add_node(c_node *node);
+
 
     void remove_node(c_node *node)
     {
         _nodes.erase(std::remove_if(_nodes.begin(), _nodes.end(), [node](c_node *nd)
                                     { return nd == node; }));
+
+        std::sort(_nodes.begin(), _nodes.end(), [](c_node* a, c_node* b) {
+        return a->style().get_z_index() > b->style().get_z_index();
+    });
+        for(int i = 0; i < _nodes.size(); i++) {
+            _nodes.at(i)->global_index = i;
+        }
     }
 
     void for_each_node_if(std::function<bool(c_node *)> _if_callback, std::function<void(c_node *)> _callback);

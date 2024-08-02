@@ -14,10 +14,12 @@
 #include <iostream>
 #include <algorithm>
 
-c_app_context::c_app_context()
+c_app_context::c_app_context(int width, int height)
 {
-    texture = BLImage(1920, 1080, BL_FORMAT_PRGB32);
-    image_buffer.resize(1920 * 1080 * 4);
+    this->width = width;
+    this->height = height;
+    texture = BLImage(width, height, BL_FORMAT_PRGB32);
+    image_buffer.resize(width * height * 4);
 }
 c_app_context::~c_app_context()
 {
@@ -26,12 +28,14 @@ c_app_context::~c_app_context()
 void c_app_context::execute()
 {
 
-    for (size_t i = 0; i < c_app_context::get_current()->_nodes.size(); i++)
+    for (size_t i = 0; i < _states.size(); i++)
     {
-        auto node = c_app_context::get_current()->_nodes.at(i);
-        if (node == nullptr)
+        auto& state = _states.at(i);
+        if (state == nullptr)
             continue;
-        node->check_for_state_changes();
+        if (state->require_update())
+            state->consume_update();
+
     }
 
     for (auto &transition : _transitions)
@@ -131,70 +135,75 @@ void c_app_context::process_event(c_node_event *event)
         process_mouse_move(event->as<c_mouse_move_event>());
     else
     {
-        std::vector<c_event_listener *> absolute_listenrs;
-
-        for (auto &listener : _event_listeners)
-        {
-            if (listener->absolute)
-                absolute_listenrs.push_back(listener);
-        }
-        std::sort(absolute_listenrs.begin(), absolute_listenrs.end(), [](const c_event_listener *a, const c_event_listener *b)
-                  { return a->z_index > b->z_index; });
-
-        process_event_for_listeners(event, absolute_listenrs, true);
-
-        if (event->_stop_propagation)
-            return;
-
         process_event_for_listeners(event, _event_listeners);
     }
 }
-void c_app_context::process_event_for_listeners(c_node_event *event, std::vector<c_event_listener *> listeners, bool absolute)
-{
+void c_app_context::process_event_for_listeners(c_node_event *event, std::vector<c_event_listener *> listeners, bool absolute) {
     for (int i = 0; i < listeners.size(); i++)
     {
         auto &listener = listeners.at(i);
-        if (event->type == listener->type)
+        if (event->type != listener->type)
+            continue;;
+
+        if (listener->node == nullptr)
+            continue;
+
+        if (event->_stop_propagation)
+            continue;
+
+
+        auto &box = listener->node->box;
+        auto &cursor = event->position;
+
+        bool overflow = false;
+        if (listener->node->parent)
         {
-            if (listener->node == nullptr)
-                continue;
+            auto parent_box = listener->node->parent->box;
 
-            if (event->_stop_propagation)
-                continue;
-
-            if (listener->node->absolute && !absolute)
-                continue;
-
-            event->target = listener->node;
-            auto &box = listener->node->box;
-            auto &cursor = event->position;
-
-            bool overflow = false;
-            if (listener->node->parent)
-            {
-                auto parent_box = listener->node->parent->box;
-
-                overflow = (box.y > parent_box.y + parent_box.h) || box.y + box.h < parent_box.y;
-            }
-
-            if (!overflow && (cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h))
-            {
-
-                listener->callback(event);
-            }
-
-            if (event->_stop_propagation)
-                break;
+            overflow = (box.y > parent_box.y + parent_box.h) || box.y + box.h < parent_box.y;
         }
+
+
+        if (!overflow && (cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h))
+        {
+            event->target = listener->node;
+            listener->callback(event);
+        }
+
+        if (event->_stop_propagation)
+            break;
     }
 }
 
 void c_app_context::add_event_listener(c_node *node, c_event_listener *listener)
 {
-    // std::cout << "add_event_listener " << listener << std::endl;
+    std::cout << "add_event_listener " << std::endl;
+    if (std::find(_event_listeners.begin(), _event_listeners.end(), listener) == _event_listeners.end()) {
+        assert("Duplicate event listener");
+    }
     _event_listeners.push_back(listener);
-}
 
+
+    listener->absolute = node->absolute_anchestor(listener->z_index);
+
+
+    std::ranges::sort(_event_listeners, [](const c_event_listener *a, const c_event_listener *b)
+{
+
+    return a->node->global_index > b->node->global_index;
+});
+
+
+
+   // std::reverse(_event_listeners.begin(), _event_listeners.end());
+
+}
+void c_app_context::add_state(c_state* state) {
+    if (std::find(_states.begin(), _states.end(), state) == _states.end())
+        return;
+
+    _states.push_back(state);
+}
 void c_app_context::remove_transitions_for_node(c_node *node)
 {
     _transitions.erase(std::remove_if(_transitions.begin(), _transitions.end(), [node](c_transition *transition)
@@ -250,50 +259,58 @@ std::vector<uint8_t> &c_app_context::get_image_buffer()
     return image_buffer;
 }
 
+void c_app_context::add_node(c_node *node) {
+
+    if (std::find(_nodes.begin(), _nodes.end(), node) == _nodes.end()) {
+        _nodes.push_back(node);
+    }
+
+    for(int i = 0; i < _nodes.size(); i++)
+        node->global_index = _nodes.size();
+
+}
+
 bool c_app_context::render()
 {
-    
+
+    if (root == nullptr) {
+        assert("Root node is null in c_app_context::render()");
+        return false;
+    }
+
 
     bool _dirty_layout = false;
 
     if (!root->require_rerender(_dirty_layout))
         return false;
 
-    std::cout << "c_window::render " << std::endl;
+    std::cout << "c_app_context::render " << std::endl;
 
     if (_dirty_layout)
     {
-        YGNodeCalculateLayout((YGNodeRef)root->getRef(), 1920.f, 1080.f, YGDirectionLTR);
+        YGNodeCalculateLayout((YGNodeRef)root->getRef(), width, height, YGDirectionLTR);
         std::cout << "c_window::layout update " << std::endl;
         BLPointI point = BLPointI(YGNodeLayoutGetLeft((YGNodeRef)root->getRef()), YGNodeLayoutGetTop((YGNodeRef)root->getRef()));
 
         root->layout_update(point);
-        root->dirty_layout = false;
     }
+
     BLContext context(texture);
     context.clearAll();
 
-   std::vector<c_node*> absolute_nodes;
-    for(auto& node :  c_app_context::get_current()->_nodes) {
-        if (node->node_ref == nullptr) {
-            std::cout << "found null noderef " << std::endl;
-            continue;;
-        }
-        if ( YGNodeStyleGetPositionType((YGNodeRef)node->getRef()) == YGPositionTypeAbsolute && node->_style->get_z_index()  > 0)
-            absolute_nodes.push_back(node);
+    root->render(context);
+    for(auto& node : _nodes) {
+        if (node->style().get_z_index() > 0)
+             node->render(context);
     }
 
-    root->render(context);
-
-    std::sort(absolute_nodes.begin(), absolute_nodes.end(), [](const c_node* a, const c_node* b)
-              { return a->_style->get_z_index() > b->_style->get_z_index(); });
-    for(auto& node : absolute_nodes)
-        node->render(context);
 
     context.end();
 
     BLImageData data;
     texture.getData(&data);
+
+
 
     memcpy(image_buffer.data(), data.pixelData, image_buffer.size());
     root->dirty = false;
@@ -303,4 +320,20 @@ bool c_app_context::render()
 
 void c_app_context::set_node_root(c_node *node){
     root = node;
+}
+
+void c_app_context::ensure_state_exist(c_state* state) {
+    if (std::find(_states.begin(), _states.end(), state) == _states.end())
+        _states.push_back(state);
+}
+
+c_node* c_app_context::get_node_by_hash(std::uint32_t hash) {
+    auto itx=  std::find_if(_nodes.begin(), _nodes.end(), [hash](c_node* a) {
+        return a->identifier == hash;
+    });
+
+    if (itx == _nodes.end())
+        return  nullptr;
+
+    return *itx;
 }

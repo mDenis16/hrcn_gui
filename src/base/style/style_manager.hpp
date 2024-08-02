@@ -27,6 +27,8 @@ private:
     c_color _border_color;
     c_color _color;
 
+    e_position _position;
+
     bool _overflow_hidden = false;
 
     float _border_stroke = 1.f;
@@ -43,6 +45,10 @@ public:
 
     int get_z_index() {
         return _z_index;
+    }
+
+    e_position get_position() {
+        return _position;
     }
     c_style_manager()
     {

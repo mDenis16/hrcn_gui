@@ -17,3 +17,15 @@
 [submodule "libs/asmjit"]
 	path = libs/asmjit
 	url = https://github.com/asmjit/asmjit
+[submodule "examples/gui_demo/libs/glfw"]
+	path = examples/gui_demo/libs/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "examples/gui_demo/libs/glad"]
+	path = examples/gui_demo/libs/glad
+	url = https://github.com/Dav1dde/glad.git
+[submodule "examples/gui_demo/libs/glew"]
+	path = examples/gui_demo/libs/glew
+	url = https://github.com/nigels-com/glew
+[submodule "examples/gui_demo/libs/glew-cmake"]
+	path = examples/gui_demo/libs/glew-cmake
+	url = https://github.com/Perlmint/glew-cmake

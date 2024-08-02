@@ -1,8 +1,9 @@
 #pragma once
-#include <components/window.hpp>
+#include <blend2d.h>
 #include <mutex>
 #include <deque>
 
+class c_node_event;
 class c_input_context {
 public:
     c_input_context();

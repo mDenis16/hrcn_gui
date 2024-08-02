@@ -7,12 +7,12 @@ class c_custom_allocator;
 class c_app
 {
 public:
-    c_app_context *ctx;
-    c_custom_allocator* allocator;
+    c_app_context *ctx = nullptr;
+    c_custom_allocator* allocator = nullptr;
 
     void on_frame();
 
-    c_app();
+    c_app(int width, int height);
     ~c_app();
 
     c_node *root;

@@ -5,8 +5,8 @@
 
 
 
-c_app::c_app(){
-    ctx = new c_app_context();
+c_app::c_app(int width, int height){
+    ctx = new c_app_context(width, height);
 
 }
 
@@ -16,9 +16,7 @@ c_app::~c_app()
 
  void c_app::set_root(c_node* node){
     node->app_context = ctx;
-
-    ctx->root = node;
-
     node->is_root = true;
-  
+    ctx->set_node_root(node);
+
  }

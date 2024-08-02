@@ -2,6 +2,7 @@
 #include <base/node.hpp>
 #include <base/secure_string.hpp>
 
+class c_font;
 
 
 class c_text : public c_node {

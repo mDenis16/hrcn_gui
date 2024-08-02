@@ -1,4 +1,5 @@
 #pragma once
+
 #include <yoga/Yoga.h>
 #include <blend2d.h>
 #include <vector>
@@ -9,16 +10,46 @@
 
 #include <utils/fnvhash.hpp>
 
+
+#include "effect.hpp"
+
+class c_app_context;
 class c_style_manager;
 class c_transitions_manager;
 class c_event_listener;
 class c_effect;
 class c_state;
-#include "app_context.hpp"
+
 
 enum class e_node_event_type : uint8_t;
 
 class c_node_ref;
+
+class c_pending_state {
+public:
+
+    std::vector<c_event_listener *> _event_listeners;
+    std::vector<c_state *> _states;
+    std::vector<c_effect *> _effects;
+
+    c_node* _node = nullptr;
+
+    c_pending_state(c_node* node) {
+        _node = node;
+    }
+
+
+
+    void consume();
+    inline bool is_consumed() { return _consumed;}
+
+    void add_event_listener(c_node *node, c_event_listener *listener);
+
+    void add_effect(c_node* node, c_effect* effect);
+    void add_state( c_state* state);
+
+    bool _consumed = false;
+};
 
 class c_node
 {
@@ -31,9 +62,18 @@ public:
     c_node(/* args */);
     ~c_node();
 
+
+    std::string debug_obj_descriptor;
+
+    void set_debug_descriptor(std::string s) {
+        debug_obj_descriptor = s;
+    }
+
     bool is_text = false;
 
     int global_index = 0;
+
+    bool _registered_in_collector = false;
 
     c_app_context *app_context = nullptr;
 
@@ -61,6 +101,7 @@ public:
 
     c_node *parent = nullptr;
 
+    c_pending_state* _pending = nullptr;
 
     void* getRef() {
         return (void*)node_ref;
@@ -129,6 +170,9 @@ public:
         return dirty_layout;
     }
 
+    void sync_context();
+
+
     std::vector<c_state *> _states;
     std::vector<c_effect *> _effects;
 
@@ -144,29 +188,21 @@ public:
         constexpr std::uint32_t hash = string_to_fnv1_hash<str>();
         identifier = hash;
     }
-    template <str_to_hash str>
-    static c_node *get_node_by_hash()
-    {
-        constexpr std::uint32_t hash = string_to_fnv1_hash<str>();
 
-        for (auto &node : c_app_context::get_current()->_nodes)
-            if (node->identifier == hash)
-                return node;
 
-        return nullptr;
-    }
+
 
     bool require_rerender(bool &_dirty_layout);
 
     bool absolute_anchestor(int& z_index);
 
-    void ensure_children_app_context();
+    void propagate_context(c_app_context* context);
 
     bool hovering = false;
 
     std::function<void()> _on_init;
     bool _init =false;
-    void on_init(std::function<void()> _callback) {
+    void bind_init(std::function<void()> _callback) {
         _on_init = _callback;
     }
 
