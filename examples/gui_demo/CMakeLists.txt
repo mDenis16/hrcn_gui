@@ -33,7 +33,8 @@ add_executable(gui_demo ${DEMO_APP_DIR}/src/main.cpp
         src/gui.cpp
         src/gui.h
         components/combobox.cpp
-        components/combobox.h)
+        components/combobox.h
+        components_hrcn/config.h)
 
 target_compile_features(gui_demo PUBLIC cxx_std_20)
 target_link_libraries(gui_demo glfw

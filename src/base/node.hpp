@@ -221,6 +221,9 @@ public:
     void bind_init(std::function<void()> _callback) {
         _on_init = _callback;
     }
+    void on_init(std::function<void()> _callback) {
+        _on_init = _callback;
+    }
 
     BLRectI box;
     BLRect static_box;

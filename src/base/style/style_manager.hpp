@@ -35,7 +35,7 @@ public:
     ~c_border(){};
     e_border_type type = e_border_type::aa_stroke;
     c_color color = c_color(0,0,0,0);
-    float value = 0.f;
+    float value = 1.f;
 };
 
 class c_border_corner {

@@ -69,11 +69,9 @@ void c_node::destroy()
         return;
     }
 
-    std::cout << "app_context " << app_context << std::endl;
-
     app_context->remove_event_listeners_for_node(this);
 
-    std::cout << "c_node destroy [is_text] " << is_text << std::endl;
+
 
     for (unsigned int i = 0; i < children.size(); i++)
         children[i]->destroy();
@@ -109,11 +107,6 @@ void c_node::use_effect(std::function<void()> _callback, std::vector<c_state *> 
     auto effect = new c_effect(this, _callback, _states);
 
     _pending->add_effect(this, effect);
-    for (auto &state : _states) {
-        state->_effects.push_back(effect);
-        _pending->add_state(state);
-    }
-
 }
 
 void c_node::sync_context() {
@@ -147,7 +140,7 @@ c_event_listener *c_node::add_event_listener(e_node_event_type type, std::functi
 }
 void c_node::remove_event_listener(c_event_listener *_event_listener)
 {
-    c_app_context::get_current()->remove_event_listener(_event_listener);
+   app_context->remove_event_listener(_event_listener);
 }
 
 float deg2rad(float degrees) {
@@ -232,20 +225,23 @@ void c_node::render(BLContext &context) {
     auto& border_left =  _style->_borders.at((uint8_t)e_edge::left);
     auto& border_right =  _style->_borders.at((uint8_t)e_edge::right);
 
-    context.setFillStyle(BLRgba32(border_top.color.getR(), border_top.color.getG(), border_top.color.getB(), border_top.color.getA()));
+   context.setFillStyle(BLRgba32(border_top.color.getR(), border_top.color.getG(), border_top.color.getB(), border_top.color.getA()));
     context.fillRect(BLRectI(box.x, box.y, box.w, border_top.value));
 
     context.setFillStyle(BLRgba32(border_bottom.color.getR(), border_bottom.color.getG(), border_bottom.color.getB(), border_bottom.color.getA()));
-    context.fillRect(BLRectI(box.x, box.y, border_bottom.value, box.h));
+   context.fillRect(BLRectI(box.x, box.y, border_bottom.value, box.h));
 
     context.setFillStyle(BLRgba32(border_left.color.getR(), border_left.color.getG(), border_left.color.getB(), border_left.color.getA()));
-    context.fillRect(BLRectI(box.x + box.w - border_left.value, box.y, border_left.value, box.h));
+    //context.strokeRect(box);
+    context.fillRect(BLRectI(box.x + box.w - border_left.value, box.y, border_left.value, box.h - border_bottom.value));
 
     context.setFillStyle(BLRgba32(border_right.color.getR(), border_right.color.getG(), border_right.color.getB(), border_right.color.getA()));
 
-    context.fillRect(BLRectI(box.x, box.y + box.h - border_right.value, box.w, border_right.value));
+    context.fillRect(BLRectI(box.x, box.y + box.h - border_right.value , box.w, border_right.value));
 
     dirty = false;
+
+
 }
 bool c_node::absolute_anchestor(int &z_index)
 {
@@ -254,24 +250,20 @@ bool c_node::absolute_anchestor(int &z_index)
     int highest = 0;
     while (current != nullptr)
     {
-        if (current->absolute)
-        {
             if (current->_style->get_z_index() >= highest)
             {
                 z_index = current->_style->get_z_index();
                 highest = z_index;
             }
-            return true;
-        }
         current = current->parent;
     }
-
+    if (highest > 0)
+        return true;
     return false;
 }
 
 void c_node::layout_update(BLPointI point)
 {
-    std::cout << "c_node::layout_update " << std::endl;
     if (!node_ref)
         return;
 
@@ -284,20 +276,13 @@ void c_node::layout_update(BLPointI point)
     }
 
 
-
-    if (app_context) {
-        if (!_pending->is_consumed())
-            _pending->consume();
-    }
-
-
     const auto layout_width =  YGNodeLayoutGetWidth((YGNodeRef)node_ref);
     const auto layout_height = YGNodeLayoutGetHeight((YGNodeRef)node_ref);
 
     box.x = point.x + YGNodeLayoutGetLeft((YGNodeRef)node_ref);
     box.y = point.y + YGNodeLayoutGetTop((YGNodeRef)node_ref);
     box.w = layout_width;
-    box.h = layout_width;
+    box.h = layout_height;
 
 
     static_box = box;
@@ -340,7 +325,10 @@ void c_node::layout_update(BLPointI point)
                                                              mark_layout_as_dirty();
                                                          });
 
-
+    if (app_context && !_init && _on_init) {
+        _on_init();
+        _init = true;
+    }
 }
 
 BLRect c_node::calculate_bounding_box_of_children()
@@ -429,8 +417,10 @@ void c_node::remove_child(c_node *node)
 void c_node::propagate_context(c_app_context* context)
 {
 
-    if (is_root)
+    if (is_root) {
         app_context->_nodes.clear();
+    }
+
 
 
     app_context = context;
@@ -438,6 +428,10 @@ void c_node::propagate_context(c_app_context* context)
 
     app_context->_nodes.push_back(this);
 
+    if (app_context) {
+        if (!_pending->is_consumed())
+            _pending->consume();
+    }
 
 
     assert(context);
@@ -447,13 +441,14 @@ void c_node::propagate_context(c_app_context* context)
 
 
 
-    if (is_root)
-        std::reverse(app_context->_nodes.begin(), app_context->_nodes.end());
+    if (is_root) {
+       // std::reverse(app_context->_nodes.begin(), app_context->_nodes.end());
+        for (int i = 0; i < app_context->_nodes.size(); ++i)
+            app_context->_nodes.at(i)->global_index = i;
 
-    if (app_context && !_init && _on_init) {
-        _on_init();
-        _init = true;
+
     }
+
 }
 void c_node::handle_event(c_node_event *event)
 {
@@ -578,11 +573,20 @@ c_transitions_manager &c_node::transitions(int ms)
 }
 void c_pending_state::consume() {
 
-    for (auto event_listener : _event_listeners)
+    for (auto& event_listener : _event_listeners)
         _node->app_context->add_event_listener(_node, event_listener);
 
-    for(auto state : _states)
-        _node->app_context->add_state(state);
+    for(auto& effect : _effects) {
+        for(auto& state: effect->states) {
+            _node->app_context->add_state(state);
+            if (std::find_if(state->_effects.begin(), state->_effects.end(), [effect](c_effect* _eff) {
+                return _eff == effect;
+            }) == state->_effects.end()) {
+                state->_effects.push_back(effect);
+            }
+        }
+
+    }
 
     _node->app_context->add_node(_node);
 

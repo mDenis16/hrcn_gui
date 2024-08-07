@@ -26,8 +26,8 @@ public:
 
     int width = 0;
     int height = 0;
-    bool _enableHighDPI = false;
-    float _DPIscaleFactor = 1.f;
+
+    float scale_factor = 1.f;
 
     ~c_app_context();
 
@@ -104,6 +104,13 @@ public:
 
     void remove_node(c_node *node)
     {
+
+        _states.erase(std::remove_if(_states.begin(), _states.end(), [node](c_state* state) {
+           for(auto& effect : state->_effects )
+               if (effect->node == node)
+                   return true;
+            return false;
+        }), _states.end());
         _nodes.erase(std::remove_if(_nodes.begin(), _nodes.end(), [node](c_node *nd)
                                     { return nd == node; }));
 

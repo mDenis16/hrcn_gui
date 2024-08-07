@@ -8,6 +8,7 @@
 c_app::c_app(int width, int height){
     ctx = new c_app_context(width, height);
 
+    std::cout << "ctx " << ctx << std::endl;
 }
 
 c_app::~c_app()

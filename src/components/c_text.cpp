@@ -7,10 +7,12 @@
 #include <base/font.hpp>
 c_text::c_text()
 {
+
+
     is_text = true;
 
     YGNodeSetContext((YGNodeRef)node_ref, this);
-    YGNodeSetMeasureFunc((YGNodeRef)node_ref, &c_text::measure);
+    YGNodeSetMeasureFunc((YGNodeRef)node_ref, c_text::measure);
 }
 
 c_text::~c_text()

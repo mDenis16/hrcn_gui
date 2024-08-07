@@ -178,29 +178,46 @@ void c_app_context::process_event_for_listeners(c_node_event *event, std::vector
 void c_app_context::add_event_listener(c_node *node, c_event_listener *listener)
 {
     std::cout << "add_event_listener " << std::endl;
-    if (std::find(_event_listeners.begin(), _event_listeners.end(), listener) == _event_listeners.end()) {
+    if (std::find(_event_listeners.begin(), _event_listeners.end(), listener) != _event_listeners.end()) {
         assert("Duplicate event listener");
+        return;
     }
+
     _event_listeners.push_back(listener);
 
 
     listener->absolute = node->absolute_anchestor(listener->z_index);
 
 
+    if ( listener->absolute ) {
+        std::cout << "got absolute " << std::endl;
+    }
     std::ranges::sort(_event_listeners, [](const c_event_listener *a, const c_event_listener *b)
 {
 
-    return a->node->global_index > b->node->global_index;
+        if ( a->absolute && !b->absolute)
+            return true;
+        if (b->absolute && !a->absolute)
+            return false;
+
+        if (a->absolute == b->absolute)
+            return (a->z_index < b->z_index) ;
+
+        return a->node->global_index < b->node->global_index;
 });
 
 
 
-   // std::reverse(_event_listeners.begin(), _event_listeners.end());
+
 
 }
+
 void c_app_context::add_state(c_state* state) {
-    if (std::find(_states.begin(), _states.end(), state) == _states.end())
+    if (std::find_if(_states.begin(), _states.end(), [state](c_state* _s) {
+        return state == _s;
+    }) != _states.end())
         return;
+
 
     _states.push_back(state);
 }
@@ -275,8 +292,7 @@ void c_app_context::add_node(c_node *node) {
 
 }
 void c_app_context::enableHighDPI(float scaleFactor) {
-    _enableHighDPI = true;
-    _DPIscaleFactor = scaleFactor;
+    scale_factor = scaleFactor;
 }
 bool c_app_context::render()
 {
@@ -292,12 +308,11 @@ bool c_app_context::render()
     if (!root->require_rerender(_dirty_layout))
         return false;
 
-    std::cout << "c_app_context::render " << std::endl;
 
     if (_dirty_layout)
     {
         YGNodeCalculateLayout((YGNodeRef)root->getRef(), width, height, YGDirectionLTR);
-        std::cout << "c_window::layout update " << std::endl;
+
         BLPointI point = BLPointI(YGNodeLayoutGetLeft((YGNodeRef)root->getRef()), YGNodeLayoutGetTop((YGNodeRef)root->getRef()));
 
         root->layout_update(point);
@@ -307,8 +322,8 @@ bool c_app_context::render()
 
     context.clearAll();
 
-    if (_enableHighDPI) {
-        context.setTransform(BLMatrix2D::makeScaling(_DPIscaleFactor));
+    if (scale_factor > 1.f) {
+        context.setTransform(BLMatrix2D::makeScaling(scale_factor));
         context.userToMeta();
     }
 

@@ -122,7 +122,7 @@ int main()
 
 	static c_gui* gui = new c_gui(logicalWidth, logicalHeight);
 
-	gui->app->ctx->enableHighDPI(2.f);
+
 
 	GLFWwindow* window;
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -217,6 +217,9 @@ int main()
 	std::vector<uint8_t> buffer;
 	buffer.resize(gui->width * gui->height * 4);
 	uint64_t frames = 0;
+
+	gui->app->ctx->enableHighDPI(2.f);
+
 	while (! glfwWindowShouldClose(window))
 	{
 
