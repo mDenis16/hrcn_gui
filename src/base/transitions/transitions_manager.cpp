@@ -45,7 +45,21 @@ c_transitions_manager &c_transitions_manager::background_color(c_color color)
 }
 c_transitions_manager &c_transitions_manager::border_color(c_color color)
 {
-    auto transition = new c_transition_border_color(node, color, milliseconds);
+    assert(node->app_context);
+    for (uint8_t i = 0; i < 4; ++i) {
+        auto transition = new c_transition_border_color(node, (e_edge)i,color, milliseconds);
+        _list.push_back(transition);
+
+        node->app_context->_transitions.push_back(transition);
+    }
+    return *this;
+}
+c_transitions_manager &c_transitions_manager::border_color(e_edge edge, c_color color)
+{
+    if (edge == e_edge::all) {
+        return border_color(color);
+    }
+    auto transition = new c_transition_border_color(node,  edge, color, milliseconds);
     _list.push_back(transition);
     assert(node->app_context);
 

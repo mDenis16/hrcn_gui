@@ -26,6 +26,9 @@ public:
 
     int width = 0;
     int height = 0;
+    bool _enableHighDPI = false;
+    float _DPIscaleFactor = 1.f;
+
     ~c_app_context();
 
     std::vector<c_transition *> _transitions;
@@ -45,6 +48,9 @@ public:
     void ensure_state_exist(c_state* state);
 
     void add_state(c_state* state);
+
+    void enableHighDPI(float scaleFactor);
+
 
     void execute();
 

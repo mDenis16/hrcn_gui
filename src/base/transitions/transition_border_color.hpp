@@ -13,7 +13,7 @@ public:
     c_color old_color;
     c_color new_color;
 
-    c_transition_border_color(c_node *_node, c_color _new_color, int _milliseconds);
+    c_transition_border_color(c_node *_node, e_edge edge, c_color _new_color, int _milliseconds);
     ~c_transition_border_color();
 
     void run() override;

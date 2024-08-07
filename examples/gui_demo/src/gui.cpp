@@ -163,6 +163,13 @@ void c_gui::setup() {
    .width(500)
    .height(500);
 
+   sampel->add_event_listener(e_node_event_type::mouse_down_event, [sampel](c_node_event* event) {
+
+      static bool samp = false;
+      samp = !samp;
+      sampel->transitions(1000).border_color(e_edge::all, samp ? c_color(255,0,0,255) :  c_color(0,255,0,255));
+
+   });
 
    auto teletext = new c_text();
    teletext->set_font(sfns_font);

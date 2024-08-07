@@ -6,6 +6,7 @@ class c_node;
 class c_transition;
 enum class e_edge : uint8_t;
 
+
 class c_transitions_manager
 {
 public:
@@ -19,6 +20,7 @@ public:
     c_transitions_manager &position(e_edge edge, float value);
     c_transitions_manager &background_color(c_color color);
     c_transitions_manager &border_color(c_color color);
+    c_transitions_manager &border_color(e_edge edge, c_color color);
 
     std::vector<c_transition *> _list;
     

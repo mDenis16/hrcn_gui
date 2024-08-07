@@ -122,6 +122,7 @@ int main()
 
 	static c_gui* gui = new c_gui(logicalWidth, logicalHeight);
 
+	gui->app->ctx->enableHighDPI(2.f);
 
 	GLFWwindow* window;
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

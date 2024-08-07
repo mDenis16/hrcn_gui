@@ -274,7 +274,10 @@ void c_app_context::add_node(c_node *node) {
 
 
 }
-
+void c_app_context::enableHighDPI(float scaleFactor) {
+    _enableHighDPI = true;
+    _DPIscaleFactor = scaleFactor;
+}
 bool c_app_context::render()
 {
 
@@ -303,8 +306,11 @@ bool c_app_context::render()
     BLContext context(texture);
 
     context.clearAll();
-    context.setTransform(BLMatrix2D::makeScaling(2.f));
-    context.userToMeta();
+
+    if (_enableHighDPI) {
+        context.setTransform(BLMatrix2D::makeScaling(_DPIscaleFactor));
+        context.userToMeta();
+    }
 
     root->render(context);
 
@@ -316,20 +322,9 @@ bool c_app_context::render()
     }
 
 
-
-
-
     context.end();
 
 
-
-    //BLImage t(width, height, texture.format());
-
-  //  texture.scale(t, texture, BLSizeI(width))
-
-
-   // EXPECT_EQ(ctx.userTransform(), transform);
- //   EXPECT_EQ(ctx.metaTransform(), BLMatrix2D::makeIdentity());
 
     BLImageData data;
     texture.getData(&data);
