@@ -13,7 +13,7 @@ c_transition_border_color::c_transition_border_color(c_node *_node, c_color _new
 
     this->new_color = _new_color;
 
-    this->old_color = _node->_style->_border_color;
+  //  this->old_color = _node->_style->border_color();
 }
 c_transition_border_color::~c_transition_border_color()
 {
@@ -24,7 +24,7 @@ void c_transition_border_color::run()
     // std::cout << "c_transition_position " << std::endl;
     c_transition::run();
 
-    auto &color = node->_style->_border_color;
+    auto &color = node->_style->_borders.at(0).color;
 
     if (new_color.getR() != old_color.getR())
         color.setR(std::lerp(old_color.getR(), new_color.getR(), progress));

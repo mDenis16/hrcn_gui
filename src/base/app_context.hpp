@@ -102,7 +102,7 @@ public:
                                     { return nd == node; }));
 
         std::sort(_nodes.begin(), _nodes.end(), [](c_node* a, c_node* b) {
-        return a->style().get_z_index() > b->style().get_z_index();
+        return a->style().get_z_index() < b->style().get_z_index();
     });
         for(int i = 0; i < _nodes.size(); i++) {
             _nodes.at(i)->global_index = i;

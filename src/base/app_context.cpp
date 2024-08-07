@@ -265,8 +265,13 @@ void c_app_context::add_node(c_node *node) {
         _nodes.push_back(node);
     }
 
+    std::sort(_nodes.begin(), _nodes.end(), [](c_node* a, c_node* b) {
+       return a->style().get_z_index() < b->style().get_z_index();
+   });
+
     for(int i = 0; i < _nodes.size(); i++)
         node->global_index = _nodes.size();
+
 
 }
 
@@ -296,16 +301,35 @@ bool c_app_context::render()
     }
 
     BLContext context(texture);
+
     context.clearAll();
+    context.setTransform(BLMatrix2D::makeScaling(2.f));
+    context.userToMeta();
 
     root->render(context);
+
+
+
     for(auto& node : _nodes) {
         if (node->style().get_z_index() > 0)
              node->render(context);
     }
 
 
+
+
+
     context.end();
+
+
+
+    //BLImage t(width, height, texture.format());
+
+  //  texture.scale(t, texture, BLSizeI(width))
+
+
+   // EXPECT_EQ(ctx.userTransform(), transform);
+ //   EXPECT_EQ(ctx.metaTransform(), BLMatrix2D::makeIdentity());
 
     BLImageData data;
     texture.getData(&data);

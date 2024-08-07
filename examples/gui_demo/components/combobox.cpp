@@ -11,7 +11,7 @@ c_combobox::c_combobox(c_font* _font, std::vector<runtime_secure_string> items) 
     font = _font;
 
     style()
-    .border_color(c_color(0,255,255,255))
+   // .border_color(c_color(0,255,255,255))
     .background_color(c_color(255, 47, 57, 255)).width(200).height(60)
     .display(e_display::flex).align_items(e_align::center).justify_content(e_justify::center);
 
@@ -62,7 +62,7 @@ void c_combobox::on_click(c_node_event* event) {
         combo_item->style()
         .justify_content(e_justify::center)
         .align_items(e_align::center)
-        .height(40).width_percent(100).border_color(c_color(0,0,255, 255));
+        .height(40).width_percent(100);//.border_color(c_color(0,0,255, 255));
         selector->add_child(combo_item);
 
 

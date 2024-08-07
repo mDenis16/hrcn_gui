@@ -51,8 +51,20 @@ void c_text::render(BLContext &context)
 
     blend2d_font.getTextMetrics(gb, tm);
 
+
+
+
+    BLImage t(box.w, box.h, BL_FORMAT_PRGB32);
+
+
+
+
     context.fillGlyphRun(BLPoint(box.x, box.y + fm.capHeight),
                          blend2d_font, gb.glyphRun(), BLRgba32(_style->_color.getR(), _style->_color.getG(), _style->_color.getB(), _style->_color.getA()));
+
+
+
+
 
     memset((void *)(&raw[0]), 0, 128);
     // raw[127] = '0/';

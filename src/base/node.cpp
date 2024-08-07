@@ -5,7 +5,7 @@
 #include "mouse_event.hpp"
 
 #include <iostream>
-
+#include <sstream>
 #include "transitions/transition.hpp"
 #include <base/transitions/transitions_manager.hpp>
 #include <base/style/style_manager.hpp>
@@ -18,7 +18,10 @@
 #include <base/yg_enums.hpp>
 #include <algorithm>
 #include <base/app_context.hpp>
+#include <utils/path_generator.hpp>
 
+#include "font.hpp"
+#include "blend2d/pipeline/pipedefs_p.h"
 #include "events/mouse_scroll_event.hpp"
 
 
@@ -147,9 +150,61 @@ void c_node::remove_event_listener(c_event_listener *_event_listener)
     c_app_context::get_current()->remove_event_listener(_event_listener);
 }
 
+float deg2rad(float degrees) {
+    double radians = degrees * (M_PI / 180.0);
+    return  radians;
+}
 
-void c_node::render(BLContext &context)
-{
+bool c_node::have_rounded_borders() {
+    for(auto& border : _style->_border_corners)
+        if (border.radius > 0.f)
+            return true;
+
+   return  false;
+}
+BLImage tampenie(int w, int h) {
+
+
+    // create the main BLContext
+    BLImage img(w, h, BL_FORMAT_PRGB32);
+    BLContext ctx(img);
+    ctx.clearAll();
+    ctx.setFillStyle(BLRgba32(0,255,255,100));
+    ctx.fillRect(BLRect(0,0, w, h));
+    ctx.setTransform( {1,0,0,1, w * 0.5,h * 0.5} ); //put the origin at the center of img
+
+
+    ctx.fillCircle(0,0,90);
+    ctx.setFillStyle(BLRgba32(255,0,0,255));
+    ctx.fillTriangle(-w * 0.5,-h * 0.5, 0, 0, -w * 0.5, h * 0.5 );
+    ctx.setFillStyle(BLRgba32(0,255,0,255));
+    ctx.fillTriangle(w * 0.5,-h * 0.5, 0, 0, w * 0.5, h * 0.5);
+    ctx.setFillStyle(BLRgba32(0,0,255,255));
+    ctx.fillTriangle(-w * 0.5,-h * 0.5, 0, 0, w * 0.5, -h * 0.5 );
+
+    ctx.fillTriangle(-w * 0.5,h * 0.5, 0, 0, w * 0.5, h * 0.5 );
+    ctx.end();
+
+    return img;
+}
+double distanceBetweenTwoPoints( BLPoint a, BLPoint b)  {
+    double dx = b.x - a.x;
+    double dy = b.y - a.y;
+    return std::sqrt(dx * dx + dy * dy);
+}
+float angleBetweenTwoPoints(BLPoint a, BLPoint b) {
+  BLPoint dif = a - b;
+
+    float theta = std::atan2f(dif.y, dif.x); // range (-PI, PI]
+    return theta;
+}
+BLPoint generatePoint(BLPoint base,float angle, float distance) {
+    double newX = base.x + distance * std::cos(angle);
+    double newY = base.y + distance * std::sin(angle);
+
+    return BLPoint(newX,newY);
+}
+void c_node::render(BLContext &context) {
     if (parent && YGNodeLayoutGetHadOverflow((YGNodeRef)parent->node_ref))
     {
         auto parent_box = parent->box;
@@ -170,19 +225,25 @@ void c_node::render(BLContext &context)
     }
 
     if (overflow_y && _style->_overflow_hidden)
-       context.restoreClipping();
+        context.restoreClipping();
 
-    context.setFillStyle(BLRgba32(_style->_border_color.getR(),_style->_border_color.getG(),_style->_border_color.getB(),_style->_border_color.getA()));
-    context.fillRect(BLRectI(box.x, box.y, box.w, 1));
-    context.fillRect(BLRectI(box.x, box.y, 1, box.h));
+    auto& border_top = _style->_borders.at((uint8_t)e_edge::top);
+    auto& border_bottom = _style->_borders.at((uint8_t)e_edge::bottom);
+    auto& border_left =  _style->_borders.at((uint8_t)e_edge::left);
+    auto& border_right =  _style->_borders.at((uint8_t)e_edge::right);
 
-    context.fillRect(BLRectI(box.x + box.w - 1, box.y, 1, box.h));
+    context.setFillStyle(BLRgba32(border_top.color.getR(), border_top.color.getG(), border_top.color.getB(), border_top.color.getA()));
+    context.fillRect(BLRectI(box.x, box.y, box.w, border_top.value));
 
-    context.fillRect(BLRectI(box.x, box.y + box.h - 1, box.w, 1));
+    context.setFillStyle(BLRgba32(border_bottom.color.getR(), border_bottom.color.getG(), border_bottom.color.getB(), border_bottom.color.getA()));
+    context.fillRect(BLRectI(box.x, box.y, border_bottom.value, box.h));
 
-    // context.strokeRect(BLRectI((int)box.x, (int)box.y, (int)box.w, (int)box.h));
+    context.setFillStyle(BLRgba32(border_left.color.getR(), border_left.color.getG(), border_left.color.getB(), border_left.color.getA()));
+    context.fillRect(BLRectI(box.x + box.w - border_left.value, box.y, border_left.value, box.h));
 
-    // context.strokeRect(static_box);
+    context.setFillStyle(BLRgba32(border_right.color.getR(), border_right.color.getG(), border_right.color.getB(), border_right.color.getA()));
+
+    context.fillRect(BLRectI(box.x, box.y + box.h - border_right.value, box.w, border_right.value));
 
     dirty = false;
 }
@@ -230,11 +291,14 @@ void c_node::layout_update(BLPointI point)
     }
 
 
+    const auto layout_width =  YGNodeLayoutGetWidth((YGNodeRef)node_ref);
+    const auto layout_height = YGNodeLayoutGetHeight((YGNodeRef)node_ref);
 
     box.x = point.x + YGNodeLayoutGetLeft((YGNodeRef)node_ref);
     box.y = point.y + YGNodeLayoutGetTop((YGNodeRef)node_ref);
-    box.w = YGNodeLayoutGetWidth((YGNodeRef)node_ref);
-    box.h = YGNodeLayoutGetHeight((YGNodeRef)node_ref);
+    box.w = layout_width;
+    box.h = layout_width;
+
 
     static_box = box;
 
@@ -475,11 +539,9 @@ bool c_node::require_rerender(bool &_dirty_layout)
     auto d = this;
     bool drty = false;
 
+
     for (c_node *node : app_context->_nodes)
     {
-
-        if (node->parent == nullptr || node->is_root)
-            continue;
 
         if (node->dirty || node->dirty_layout)
         {

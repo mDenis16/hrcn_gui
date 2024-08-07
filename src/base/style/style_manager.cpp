@@ -79,6 +79,21 @@ c_style_manager &c_style_manager::z_index(int value)
     return *this;
 }
 
+c_style_manager &c_style_manager::border_radius(float value) {
+    for(auto& border : _border_corners)
+        border.radius = value;
+    node->_dirty_border = true;
+    node->mark_as_dirty();
+    return *this;
+}
+c_style_manager &c_style_manager::border_radius(e_corner corner,float value) {
+
+   _border_corners.at((uint8_t)corner).radius = value;
+
+    node->_dirty_border = true;
+    node->mark_as_dirty();
+    return *this;
+}
 c_style_manager &c_style_manager::width(float value)
 {
     YGNodeStyleSetWidth((YGNodeRef)node->getRef(), value);
@@ -132,15 +147,42 @@ c_style_manager &c_style_manager::background_color(c_color color)
 c_style_manager &c_style_manager::border_color(c_color color)
 {
     node->mark_layout_as_dirty();
-    _border_color = color;
+    for(auto& border : _borders)
+        border.color = color;
+    node->mark_as_dirty();
     return *this;
 }
-c_style_manager &c_style_manager::border_stroke(float value)
+c_style_manager &c_style_manager::border_color(e_edge edge, c_color color)
+{
+    _borders.at((uint8_t)edge).color = color;
+    node->mark_as_dirty();
+    return *this;
+}
+c_style_manager &c_style_manager::border_stroke( float value)
+{
+
+    return *this;
+}
+c_style_manager &c_style_manager::border_line(e_edge edge, float value)
 {
     node->mark_layout_as_dirty();
-    _border_stroke = value;
+    //_border_line = value;
     return *this;
 }
+
+c_style_manager &c_style_manager::border_width(float value) {
+    for(auto& border : _borders)
+        border.value = value;
+
+    node->mark_as_dirty();
+    return *this;
+}
+c_style_manager &c_style_manager::border_width(e_edge edge,float value) {
+    _borders.at((uint8_t)edge).value = value;
+    node->mark_as_dirty();
+    return *this;
+}
+
 
 c_style_manager &c_style_manager::gap(e_gutter gutter, float value)
 {

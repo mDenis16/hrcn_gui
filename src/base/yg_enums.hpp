@@ -7,7 +7,13 @@ enum class e_flex_direction : uint8_t
   row = YGFlexDirectionRow,
   row_reverse = YGFlexDirectionRowReverse,
 };
-
+enum class e_corner : uint8_t {
+  left_top,
+  left_bottom,
+  right_top,
+  right_bottom,
+  all
+};
 enum class e_align : uint8_t
 {
   flex_auto = YGAlignAuto,

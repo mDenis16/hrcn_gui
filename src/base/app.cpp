@@ -18,5 +18,5 @@ c_app::~c_app()
     node->app_context = ctx;
     node->is_root = true;
     ctx->set_node_root(node);
-
+    node->propagate_context(ctx);
  }

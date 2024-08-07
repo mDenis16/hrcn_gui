@@ -9,12 +9,14 @@
 
 class c_gui {
 public:
-    c_gui();
+    c_gui(int width, int height);
     ~c_gui();
 
 
     void setup();
 
+
+    int width, height ;
 
     class c_app* app;
     class c_input_context* input_context;

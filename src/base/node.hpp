@@ -12,13 +12,16 @@
 
 
 #include "effect.hpp"
+#include "style/style_manager.hpp"
 
 class c_app_context;
+class c_border;
 class c_style_manager;
 class c_transitions_manager;
 class c_event_listener;
 class c_effect;
 class c_state;
+class c_font;
 
 
 enum class e_node_event_type : uint8_t;
@@ -63,7 +66,20 @@ public:
     ~c_node();
 
 
+    bool _dirty_border = false;
+
+    inline bool is_border_dirty() {
+        return _dirty_border;
+    }
+
+
+    std::array<BLPath, 4> _border_paths;
+
+   inline static c_font* default_font = nullptr;
+    bool have_rounded_borders() ;
     std::string debug_obj_descriptor;
+
+    BLPath round_rect;
 
     void set_debug_descriptor(std::string s) {
         debug_obj_descriptor = s;

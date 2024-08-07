@@ -80,34 +80,58 @@ void PrintShaderInfoLog(GLint const Shader)
 		delete [] InfoLog;
 	}
 }
+struct Matrix4 {
+	float m[16];
 
+	Matrix4() {
+		// Initialize to identity matrix
+		m[0]  = 1.0f; m[1]  = 0.0f; m[2]  = 0.0f; m[3]  = 0.0f;
+		m[4]  = 0.0f; m[5]  = 1.0f; m[6]  = 0.0f; m[7]  = 0.0f;
+		m[8]  = 0.0f; m[9]  = 0.0f; m[10] = 1.0f; m[11] = 0.0f;
+		m[12] = 0.0f; m[13] = 0.0f; m[14] = 0.0f; m[15] = 1.0f;
+	}
+
+	static Matrix4 scale(float sx, float sy, float sz) {
+		Matrix4 result;
+		result.m[0]  = sx;  result.m[1]  = 0.0f; result.m[2]  = 0.0f; result.m[3]  = 0.0f;
+		result.m[4]  = 0.0f; result.m[5]  = sy;  result.m[6]  = 0.0f; result.m[7]  = 0.0f;
+		result.m[8]  = 0.0f; result.m[9]  = 0.0f; result.m[10] = sz;  result.m[11] = 0.0f;
+		result.m[12] = 0.0f; result.m[13] = 0.0f; result.m[14] = 0.0f; result.m[15] = 1.0f;
+		return result;
+	}
+
+	// Convert matrix to float array (column-major order)
+	const float* toArray() const {
+		return m;
+	}
+};
 
 int main()
 {
 
-	int width = 1280;
-	int height = 720;
+	int fakeWidth = 1280;
+	int fakeHeight = 720;
 
-	auto screenw = width;
-	auto screenh = height;
-
-
+	int logicalWidth = fakeWidth * 2.f;
+	int logicalHeight = fakeHeight * 2.f;
 
 
 
 
 
-	static c_gui* gui = new c_gui();
+
+	static c_gui* gui = new c_gui(logicalWidth, logicalHeight);
 
 
 	GLFWwindow* window;
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	if (! glfwInit())
 		return -1;
 
-	window = glfwCreateWindow(1270, 720, "demo", NULL, NULL);
+	window = glfwCreateWindow(fakeWidth , fakeHeight , "demo", NULL, NULL);
 	if (! window)
 	{
 		glfwTerminate();
@@ -126,6 +150,21 @@ int main()
 	glfwSetCursorPosCallback(window, [](GLFWwindow *window, double x, double y)
 							 { gui->cursor_callback(x, y); });
 
+	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+		// Update the global dimensions
+
+
+ // Update the viewport
+
+
+ // Update the orthographic projection matrix
+ glMatrixMode(GL_PROJECTION);
+ glLoadIdentity();
+ // Maintain the aspect ratio
+ glOrtho(0, width * 0.5f, height * 0.5f, 0, -1, 1);  // Left, Right, Bottom, Top, Near, Far
+ glMatrixMode(GL_MODELVIEW);
+
+	});
 
 	glfwMakeContextCurrent(window);
 	glewExperimental = GL_TRUE;
@@ -142,7 +181,7 @@ int main()
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, 1280, 720, 0, -1, 1);  // Left, Right, Bottom, Top, Near, Far
+	glOrtho(0, logicalWidth * 0.5f , logicalHeight  * 0.5f , 0, -1, 1);  // Left, Right, Bottom, Top, Near, Far
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -158,19 +197,11 @@ int main()
 		return 1;
 	}
 
-	// Texture size must be power of two for the primitive OpenGL version this is written for. Find next power of two.
-	size_t u2 = 1; while(u2 < width) u2 *= 2;
-	size_t v2 = 1; while(v2 < height) v2 *= 2;
-	// Ratio for power of two version compared to actual version, to render the non power of two image with proper size.
-	double u3 = (double)width / u2;
-	double v3 = (double)height / v2;
-
-
 
 	// Enable the texture for OpenGL.
 	glEnable(GL_TEXTURE_2D);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //GL_NEAREST = no smoothing
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //GL_NEAREST = no smoothing
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	bool done = false;
 
@@ -183,7 +214,7 @@ int main()
 
 	gui->setup();
 	std::vector<uint8_t> buffer;
-	buffer.resize(width * height * 4);
+	buffer.resize(gui->width * gui->height * 4);
 	uint64_t frames = 0;
 	while (! glfwWindowShouldClose(window))
 	{
@@ -205,13 +236,25 @@ int main()
 			glClearColor(0.2f, 0.1f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, &buffer.data()[0]);
+			float scale = 1.f;
+
+
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, logicalWidth, logicalHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, &buffer.data()[0]);
+
+
 
 			glBegin(GL_QUADS);
+			// Bottom-left
 			glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
-			glTexCoord2f(1.0f, 0.0f); glVertex2f(width, 0.0f);
-			glTexCoord2f(1.0f, 1.0f); glVertex2f(width, height);
-			glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, height);
+
+			// Bottom-right
+			glTexCoord2f(1.0f, 0.0f); glVertex2f(scale * fakeWidth, 0.0f);
+
+			// Top-right
+			glTexCoord2f(1.0f, 1.0f); glVertex2f(scale * fakeWidth, scale * fakeHeight);
+
+			// Top-left
+			glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, scale * fakeHeight);
 			glEnd();
 
 			glfwSwapBuffers(window);
