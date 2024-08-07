@@ -1,7 +1,7 @@
 #include <base/font.hpp>
 #include <blend2d.h>
 #include <base/font_face.hpp>
-
+#include <cassert>
 #include "blend2d/fonttagdataids_p.h"
 
 c_font::c_font(c_font_face* face, float size) : _face(face) {

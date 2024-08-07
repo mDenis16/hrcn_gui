@@ -1,11 +1,12 @@
 #pragma once
-
+#include <cassert>
 #include <yoga/Yoga.h>
 #include <blend2d.h>
 #include <vector>
 #include <functional>
 #include "node_event.hpp"
 #include <iostream>
+#include <algorithm>
 #include <chrono>
 
 #include <utils/fnvhash.hpp>
