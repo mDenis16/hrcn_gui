@@ -1,12 +1,13 @@
 #pragma once
 #include <algorithm>
 #include <blend2d.h>
+#include  <numbers>
 
 namespace path_generator {
     std::pair<BLPoint, BLPoint> calculate_quadratic_bezier_control_points(BLPoint start, BLPoint end, double radius) {
         double angle = std::atan2(end.y - start.y, end.x - start.x);
-        double dx = radius * std::cos(angle + M_PI_2);
-        double dy = radius * std::sin(angle + M_PI_2);
+        double dx = radius * std::cos(angle + std::numbers::pi * 2);
+        double dy = radius * std::sin(angle + std::numbers::pi * 2);
         return std::make_pair(BLPoint(start.x + dx, start.y + dy), BLPoint(end.x - dx, end.y - dy));
     }
     void generate_rounded_rectangle(BLPath& path, float x, float y, float w, float h,
