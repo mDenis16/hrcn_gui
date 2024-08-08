@@ -99,7 +99,7 @@ void c_app_context::process_mouse_move(c_mouse_move_event *event)
                     {
                         auto ev =  c_mouse_enter_event();
                         std::cout << "c_mouse_enter_event " << std::endl;
-                        ev->target = listener->node;
+                        ev.target = listener->node;
 
                         listener->callback((c_node_event *)&ev);
                         listener->node->hovering = true;
@@ -107,8 +107,8 @@ void c_app_context::process_mouse_move(c_mouse_move_event *event)
                     else if (listener->type == e_node_event_type::mouse_move_event)
                     {
                         auto ev =  c_mouse_move_event();
-                        ev->position = cursor;
-                        ev->target = listener->node;
+                         ev.position = cursor;
+                         ev.target = listener->node;
 
                         listener->callback((c_node_event *)&ev);
                     }
@@ -118,7 +118,7 @@ void c_app_context::process_mouse_move(c_mouse_move_event *event)
                     if (listener->type == e_node_event_type::mouse_exit_event && listener->node->hovering)
                     {
                         auto ev =  c_mouse_exit_event();
-                        ev->target = listener->node;
+                         ev.target = listener->node;
                         std::cout << "c_mouse_exit_event " << std::endl;
                         listener->callback((c_node_event *)&ev);
                         listener->node->hovering = false;
