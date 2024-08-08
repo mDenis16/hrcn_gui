@@ -67,6 +67,7 @@ void c_app_context::process_events()
         auto event = _events.front();
         _events.pop_front();
         process_event(event);
+         delete event;
     }
 }
 void c_app_context::push_event(c_node_event *_event)
@@ -96,30 +97,30 @@ void c_app_context::process_mouse_move(c_mouse_move_event *event)
 
                     if (listener->type == e_node_event_type::mouse_enter_event && !listener->node->hovering)
                     {
-                        auto ev = new c_mouse_enter_event();
+                        auto ev =  c_mouse_enter_event();
                         std::cout << "c_mouse_enter_event " << std::endl;
                         ev->target = listener->node;
 
-                        listener->callback((c_node_event *)ev);
+                        listener->callback((c_node_event *)&ev);
                         listener->node->hovering = true;
                     }
                     else if (listener->type == e_node_event_type::mouse_move_event)
                     {
-                        auto ev = new c_mouse_move_event();
+                        auto ev =  c_mouse_move_event();
                         ev->position = cursor;
                         ev->target = listener->node;
 
-                        listener->callback((c_node_event *)ev);
+                        listener->callback((c_node_event *)&ev);
                     }
                 }
                 else
                 {
                     if (listener->type == e_node_event_type::mouse_exit_event && listener->node->hovering)
                     {
-                        auto ev = new c_mouse_exit_event();
+                        auto ev =  c_mouse_exit_event();
                         ev->target = listener->node;
                         std::cout << "c_mouse_exit_event " << std::endl;
-                        listener->callback((c_node_event *)ev);
+                        listener->callback((c_node_event *)&ev);
                         listener->node->hovering = false;
                     }
                 }
