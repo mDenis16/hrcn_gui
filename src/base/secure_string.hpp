@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <array>
+#include <functional>
 
 template <size_t N>
   struct secure_string

@@ -23,6 +23,7 @@
 #include "font.hpp"
 #include "blend2d/pipeline/pipedefs_p.h"
 #include "events/mouse_scroll_event.hpp"
+#include <numbers>
 
 
 static int idx = 0;
@@ -144,7 +145,7 @@ void c_node::remove_event_listener(c_event_listener *_event_listener)
 }
 
 float deg2rad(float degrees) {
-    double radians = degrees * (M_PI / 180.0);
+    double radians = degrees * (std::numbers::pi_v<double> / 180.0);
     return  radians;
 }
 
