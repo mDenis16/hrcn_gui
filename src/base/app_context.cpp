@@ -164,6 +164,11 @@ void c_app_context::process_event_for_listeners(c_node_event *event, std::vector
             overflow = (box.y > parent_box.y + parent_box.h) || box.y + box.h < parent_box.y;
         }
 
+        if (event->type == e_node_event_type::key_down_event || event->type == e_node_event_type::key_up_event) {
+            event->target = listener->node;
+            listener->callback(event);
+            continue;
+        }
 
         if (!overflow && (cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h))
         {
@@ -190,11 +195,8 @@ void c_app_context::add_event_listener(c_node *node, c_event_listener *listener)
     listener->absolute = node->absolute_anchestor(listener->z_index);
 
 
-    if ( listener->absolute ) {
-        std::cout << "got absolute " << std::endl;
-    }
     std::ranges::sort(_event_listeners, [](const c_event_listener *a, const c_event_listener *b)
-{
+    {
 
         if ( a->absolute && !b->absolute)
             return true;
@@ -205,12 +207,7 @@ void c_app_context::add_event_listener(c_node *node, c_event_listener *listener)
             return (a->z_index < b->z_index) ;
 
         return a->node->global_index < b->node->global_index;
-});
-
-
-
-
-
+    });
 }
 
 void c_app_context::add_state(c_state* state) {

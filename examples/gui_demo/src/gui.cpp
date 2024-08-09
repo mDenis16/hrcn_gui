@@ -15,6 +15,7 @@
 #include <base/yg_enums.hpp>
 #include <base/font.hpp>
 #include <base/font_face.hpp>
+#include <base/events/key_down_event.hpp>
 
 
 c_gui::c_gui(int width, int height)
@@ -47,17 +48,21 @@ void c_gui::setup()
     app->set_root(body);
 
     auto window = new c_node();
-    body->add_child(window);
+
 
     window->style()
         .display(e_display::flex)
         .height(600.f)
-
+        .width(500.f)
         .flex_direction(e_flex_direction::column)
         .position_type(e_position::position_type_absolute)
         .gap(e_gutter::all, 4)
         .background_color(c_color(25, 12, 123, 255));
 
+    window->add_event_listener(e_node_event_type::key_down_event, [](c_node_event* event) {
+        int keycode = event->as<c_key_down_event>()->keycode;
+        std::cout << " keycode " << keycode << std::endl;
+    });
     body->add_child(window);
 }
 

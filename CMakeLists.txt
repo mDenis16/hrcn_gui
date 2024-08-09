@@ -45,9 +45,7 @@ file(GLOB_RECURSE  SOURCES CONFIGURE_DEPENDS
 
 
 
-add_library(gui STATIC  ${SOURCES}
-        src/base/base.hpp
-        src/utils/path_generator.hpp)
+add_library(gui STATIC  ${SOURCES})
 target_link_libraries(gui blend2d yogacore )
 
 if(BUILD_EXAMPLE)

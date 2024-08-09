@@ -10,6 +10,8 @@ enum class e_node_event_type : uint8_t {
    mouse_up_event,
    mouse_down_event,
    mouse_scroll_event,
+   key_up_event,
+   key_down_event,
    max
 };
 

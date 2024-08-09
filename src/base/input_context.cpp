@@ -14,8 +14,12 @@
 #include <base/events/mouse_exit_event.hpp>
 #include <base/events/mouse_down_event.hpp>
 #include <base/events/mouse_up_event.hpp>
+
 #include <base/events/mouse_scroll_event.hpp>
 #include <base/events/types.hpp>
+
+#include <base/events/key_down_event.hpp>
+#include <base/events/key_up_event.hpp>
 
 c_input_context::c_input_context()
 {
@@ -74,7 +78,19 @@ void c_input_context::cursor_callback(int x, int y)
 }
 void c_input_context::keyboard_callback(int key, int scancode, int action)
 {
-    std::cout << "action " << action << std::endl;
+    if (action == 1)
+    {
+        std::cout << "keyboard_callback c_mouse_down_event " << std::endl;
+        auto ev = new c_key_down_event();
+        ev->keycode = key;
+        c_app_context::get_current()->push_event(ev);
+    }
+    else
+    {
+        auto ev = new c_key_up_event();
+        ev->keycode = key;
+        c_app_context::get_current()->push_event(ev);
+    }
 }
 void c_input_context::mouse_callback(int button, int action)
 {

@@ -27,19 +27,16 @@ add_definitions(-DGLEW_STATIC)
 include_directories(${GLFW_INCLUDE_DIRS})
 link_libraries(${GLFW_LIBRARY_DIRS})
 
-add_executable(gui_demo ${DEMO_APP_DIR}/src/main.cpp
+add_executable(gui_demo
+         src/main.cpp
+         src/gui.cpp
         components/checkbox.cpp
-        components/checkbox.h
-        src/gui.cpp
-        src/gui.h
-        components/combobox.cpp
-        components/combobox.h
-        components_hrcn/config.h)
+         components/combobox.cpp
+        )
 
 target_compile_features(gui_demo PUBLIC cxx_std_20)
 target_link_libraries(gui_demo glfw
 ${OPENGL_LIBRARIES}
 libglew_static
-
 gui)
 
