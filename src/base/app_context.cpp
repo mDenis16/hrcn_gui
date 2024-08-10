@@ -167,7 +167,6 @@ void c_app_context::process_event_for_listeners(c_node_event *event, std::vector
         if (event->type == e_node_event_type::key_down_event || event->type == e_node_event_type::key_up_event) {
             event->target = listener->node;
             listener->callback(event);
-            continue;
         }
 
         if (!overflow && (cursor.x > box.x && cursor.y > box.y && cursor.x < box.x + box.w && cursor.y < box.y + box.h))
